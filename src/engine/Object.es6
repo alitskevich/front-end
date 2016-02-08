@@ -14,7 +14,7 @@ class Obj {
         this.__Proto__ = Proto;
     }
 
-    DefProperty(Id, attributes = {}) {
+    DefineProperty(Id, attributes = {}) {
 
         var prop = {Id, ...DEFAULT_ATTRIBUTES, ...attributes};
 
@@ -35,7 +35,7 @@ class Obj {
 
     Set(Id, Value) {
 
-        var prop = this.Properties.get(Id) || this.DefProperty(Id);
+        var prop = this.Properties.get(Id) || this.DefineProperty(Id);
 
         if (prop.isReadOnly) {
             throw new Error(`AccessError: variable '${Id}' is read only`);

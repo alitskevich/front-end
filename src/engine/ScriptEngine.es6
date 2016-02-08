@@ -8,7 +8,7 @@ const ScriptEngine = {
 
         function compile(SourceCode) {
             // collect variable declarations
-            SourceCode.replace(/var (\w*)/, (s, name) => Variables.push(name));
+            SourceCode.replace(/var (\w*)/g, (s, name) => Variables.push(name));
 
             return CompiledBody;
         }

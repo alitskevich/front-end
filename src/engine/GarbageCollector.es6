@@ -24,7 +24,7 @@ function getItem(target) {
 
 function clean() {
 
-    REGISTRY.filter(r=>!r.retainCount).forEach( r => destroy());
+    REGISTRY.filter(r=>!r.retainCount).forEach( r => destroy(r));
 }
 
 function destroy(target) {

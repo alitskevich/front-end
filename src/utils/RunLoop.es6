@@ -1,8 +1,8 @@
-const QUEUE = [];
+var QUEUE = [];
 
 function now() {
     return Date.now().valueOf()
-};
+}
 
 class Message {
 
@@ -43,7 +43,7 @@ function addMessageToQueue(m, onTop = false) {
 function findFirstHotMessage(now) {
 
     for (h of QUEUE) if (h.timestamp < now) {
-        QUEUE.remove(h);
+        QUEUE = QUEUE.filter(e=>(e!==h));
         return h;
     }
 

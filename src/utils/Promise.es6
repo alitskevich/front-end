@@ -2,9 +2,12 @@ class Promise {
 
     constructor(fn) {
 
-        this._catch = (error)=>(this.error = error);
 
+        // stub function can be used immediately
         this._then = (result)=>(this.result = result);
+
+        // stub function can be used immediately
+        this._catch = (error)=>(this.error = error);
 
         fn(
             (result)=> this._then(result)
@@ -13,17 +16,18 @@ class Promise {
         );
     }
 
-    then(resultFn, errorFn) {
+    then(thenFn, catchFn) {
 
-        if (errorFn){
-            this.catch(errorFn);
+        if (catchFn){
+            this.catch(catchFn);
         }
 
+        // wrap with try/catch
         this._then =  (result)=> {
 
             try {
 
-                resultFn(result);
+                thenFn(result);
 
             } catch (ex) {
 
@@ -39,9 +43,9 @@ class Promise {
         }
     }
 
-    catch(errorFn) {
+    catch(catchFn) {
 
-        this._catch = errorFn;
+        this._catch = catchFn;
 
         // invoke immediately if error is already exists.
         if (this.error) {

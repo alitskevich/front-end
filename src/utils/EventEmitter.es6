@@ -1,11 +1,9 @@
-
-class EventEmitter {
+export default class EventEmitter {
 
     constructor(){
 
-        this.listeners = new Map()
+        this.listeners = new Map();
     }
-
 
     addListener(key, handler){
         let handlers = this.listeners.get(key);
@@ -25,15 +23,13 @@ class EventEmitter {
 
             handlers.remove(handler);
         }
-
     }
 
     trigger(event){
-        let handlers = this.listeners.get(key);
+        let handlers = this.listeners.get(event.key);
 
         if (handlers){
             [...handlers.values()].forEach(handler=>handler(event));
         }
     }
-
 }
