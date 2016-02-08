@@ -1,58 +1,53 @@
-class Promise{
+class Promise {
 
-    constructor(fn){
+    constructor(fn) {
 
+        this._catch = (error)=>(this.error = error);
 
-        this.resolve=(result)=>{
+        this._then = (result)=>(this.result = result);
 
-            if (this._then){
-
-                this._then(result)
-
-            } else {
-
-                this.result=result;
-            }
-
-        };
-
-        this.reject=(error)=>{
-
-            if (this._catch){
-
-                this._catch(error)
-
-            } else {
-
-                this.error = error;
-            }
-        };
-
-        fn(this.resolve, this.reject);
+        fn(
+            (result)=> this._then(result)
+            ,
+            (error)=>this._catch(error)
+        );
     }
 
-    then(h){
+    then(resultFn, errorFn) {
 
-        if (this.result){
+        if (errorFn){
+            this.catch(errorFn);
+        }
 
-            h(result)
+        this._then =  (result)=> {
 
-        } else {
+            try {
 
-            this._then = h
+                resultFn(result);
+
+            } catch (ex) {
+
+                this._catch(ex);
+            }
+        };
+
+        // invoke immediately if result is already exists.
+        if (this.result) {
+
+            this._then(result);
+
         }
     }
 
-    catch(h){
+    catch(errorFn) {
 
-        if (this.error){
+        this._catch = errorFn;
 
-            h(error)
+        // invoke immediately if error is already exists.
+        if (this.error) {
 
-        } else {
+            this._catch(error);
 
-            this._catch = h
         }
     }
-
 }
