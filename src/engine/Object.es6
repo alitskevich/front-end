@@ -7,11 +7,11 @@ const DEFAULT_ATTRIBUTES = {
 
 class Obj {
 
-    constructor() {
+    constructor(Proto=null) {
 
         this.Properties = new Map();
 
-        this.referencesCount = 0;
+        this.__Proto__ = Proto;
     }
 
     DefProperty(Id, attributes = {}) {

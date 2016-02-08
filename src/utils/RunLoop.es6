@@ -1,54 +1,50 @@
 const QUEUE = [];
 
-var NOW = Date.now().valueOf();
+function now() {
+    return Date.now().valueOf()
+};
 
 class Message {
 
-    constructor(handler, lag=0, isRepeatable=false){
+    constructor(handler, lag = 0, isRepeatable = false) {
 
         this.handler = handler;
-        this.timestamp = NOW+lag;
+        this.timestamp = now() + lag;
         this.isRepeatable = isRepeatable;
 
     }
 
     isReady() {
-        return this.timestamp < NOW
+        return this.timestamp < now()
     }
 
     run() {
 
         this.handler();
 
-        if (this.isRepeatable){
-            this.timestamp = NOW+lag;
+        if (this.isRepeatable) {
+            this.timestamp = now() + lag;
             QUEUE.push(this)
         }
     }
 
-    stop(){
+    stop() {
         this.isRepeatable = false;
     }
 }
 
-function addMessageToQueue(m, onTop=false) {
-    if (onTop){
+function addMessageToQueue(m, onTop = false) {
 
-        QUEUE.unshift(m);
-    } else{
-
-        QUEUE.push(m);
-    }
+    QUEUE[onTop?'unshift':'push'](m);
 
     return m;
 }
 
-function findFirstHotMessage(){
+function findFirstHotMessage(now) {
 
-    for(h of QUEUE) {
-        if (h.timestamp < NOW){
-            return h;
-        }
+    for (h of QUEUE) if (h.timestamp < now) {
+        QUEUE.remove(h);
+        return h;
     }
 
     return null;
@@ -78,15 +74,13 @@ export default class RunLoop {
 
     start() {
 
-        while(!this.stopped){
+        while (!this.stopped) {
 
-            NOW = Date.now().valueOf();
+            const message = this.findFirstHotMessage(now());
 
-            handler = this.getAvailableHandler();
+            if (message) {
 
-            if (handler){
-
-                handler.run();
+                message.run();
 
             } else {
 
@@ -96,8 +90,8 @@ export default class RunLoop {
         }
     }
 
-    stop(){
+    stop() {
 
-        this.stopped  = true;
+        this.stopped = true;
     }
 }
