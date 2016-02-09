@@ -86,11 +86,20 @@ null === undefined; // = false
 // You can access characters in a string with `charAt`
 "This is a string".charAt(0);  // = 'T'
 
+// "charAt" function available, because interpreter doing this ...
+new String("This is a string").charAt(0);
+
 // ...or use `substring` to get larger pieces.
 "Hello world".substring(0, 5); // = "Hello"
 
+// same as for "charAt"
+new String("Hello world").substring(0, 5);
+
 // `length` is a property, so don't use ().
 "Hello".length; // = 5
+
+// ... interpreter just wraps primitive in Object
+new String("Hello").length;
 
 // There's also `null` and `undefined`.
 null;      // used to indicate a deliberate non-value
@@ -99,3 +108,6 @@ undefined; // used to indicate a value is not currently present (although
 
 // false, null, undefined, NaN, 0 and "" are falsy; everything else is truthy.
 // Note that 0 is falsy and "0" is truthy, even though 0 == "0".
+
+
+// Everything in JavaScript ACTS like an object except null and undefined.
