@@ -7,6 +7,11 @@
 
 3; // = 3
 1.5; // = 1.5
+.5; // = 0.5
+1.13e4; // = 13400
+
+// hexadecimal should start from 0x or 0X
+0xfffcc;
 
 // Some basic arithmetic works as you'd expect.
 1 + 1; // = 2
@@ -22,6 +27,9 @@
 10 % 2; // = 0
 30 % 4; // = 2
 18.5 % 7; // = 4.5
+
+// JavaScript is not the language for precise calculations
+10000000000000009 + 10000000000000008; // 20000000000000016
 
 // Bitwise operations also work; when you perform a bitwise operation your float
 // is converted to a signed int *up to* 32 bits.
@@ -86,11 +94,20 @@ null === undefined; // = false
 // You can access characters in a string with `charAt`
 "This is a string".charAt(0);  // = 'T'
 
+// "charAt" function available, because interpreter doing this ...
+new String("This is a string").charAt(0);
+
 // ...or use `substring` to get larger pieces.
 "Hello world".substring(0, 5); // = "Hello"
 
+// same as for "charAt"
+new String("Hello world").substring(0, 5);
+
 // `length` is a property, so don't use ().
 "Hello".length; // = 5
+
+// ... interpreter just wraps primitive in Object
+new String("Hello").length;
 
 // There's also `null` and `undefined`.
 null;      // used to indicate a deliberate non-value
@@ -99,3 +116,13 @@ undefined; // used to indicate a value is not currently present (although
 
 // false, null, undefined, NaN, 0 and "" are falsy; everything else is truthy.
 // Note that 0 is falsy and "0" is truthy, even though 0 == "0".
+
+// to indicate the type of the unevaluated operand, use "typeof" operator
+typeof 1; // "number"
+typeof ""; // "tring"
+typeof false; // "boolean"
+typeof new String(""); // "object"
+typeof undefined; // "undefined"
+typeof null; // "object" !!! weird behaviour...
+
+// Everything in JavaScript ACTS like an object except null and undefined.
