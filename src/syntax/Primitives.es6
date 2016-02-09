@@ -118,9 +118,11 @@ undefined; // used to indicate a value is not currently present (although
 // Note that 0 is falsy and "0" is truthy, even though 0 == "0".
 
 // to indicate the type of the unevaluated operand, use "typeof" operator
-typeof 1; // number
-typeof ""; // string
-typeof false; // boolean
-typeof new String(""); // object
+typeof 1; // "number"
+typeof ""; // "tring"
+typeof false; // "boolean"
+typeof new String(""); // "object"
+typeof undefined; // "undefined"
+typeof null; // "object" !!! weird behaviour...
 
 // Everything in JavaScript ACTS like an object except null and undefined.
