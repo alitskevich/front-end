@@ -7,6 +7,11 @@
 
 3; // = 3
 1.5; // = 1.5
+.5; // = 0.5
+1.13e4; // = 13400
+
+// hexadecimal should start from 0x or 0X
+0xfffcc;
 
 // Some basic arithmetic works as you'd expect.
 1 + 1; // = 2
@@ -22,6 +27,9 @@
 10 % 2; // = 0
 30 % 4; // = 2
 18.5 % 7; // = 4.5
+
+// JavaScript is not the language for precise calculations
+10000000000000009 + 10000000000000008; // 20000000000000016
 
 // Bitwise operations also work; when you perform a bitwise operation your float
 // is converted to a signed int *up to* 32 bits.
@@ -109,5 +117,10 @@ undefined; // used to indicate a value is not currently present (although
 // false, null, undefined, NaN, 0 and "" are falsy; everything else is truthy.
 // Note that 0 is falsy and "0" is truthy, even though 0 == "0".
 
+// to indicate the type of the unevaluated operand, use "typeof" operator
+typeof 1; // number
+typeof ""; // string
+typeof false; // boolean
+typeof new String(""); // object
 
 // Everything in JavaScript ACTS like an object except null and undefined.
