@@ -20,6 +20,9 @@
 * `formal grammar`
 > alphabet, set of terminal names, and set of rules that assign non-terminal names with expressions on terminals or non terminals
 
+* `expression`
+> specific choice of appying rules of given grammar
+
 * `text`
 > data against given formal grammar, that valid(can be recognized) in this grammar.
 
@@ -37,6 +40,9 @@
 `primitive`
 > elementary piece of data - one from defined set of values
 
+`variable`
+> named reference to one of primitive or structure instance
+
 `structure`
 way to split data into ordered sequence of sub structures or primitives.
 
@@ -44,20 +50,13 @@ way to split data into ordered sequence of sub structures or primitives.
 
 `map`
 
-
-constant
-
-variable
-
-reference
-
+`constant`
 
 ## Object-oriented
 
 type
 
 class
-
 
 object
 
@@ -91,7 +90,7 @@ loose coupling
 
 coesion
 
-single resposibility
+single responsibility
 
 pattern
 
