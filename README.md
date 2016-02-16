@@ -2,9 +2,9 @@
 
 This resource intended to give basic but still comprehend vision and understanding in field of modern Front-End Development.
 
-*Main idea* is not to describe or explain whatever, but give a chance to realize it by direct touches - providing realization of concepts in code of simulators, examples or tests.
+*Main idea* is not to describe or explain whatever, but give a chance to pick it up by direct touches - providing realization of concepts in code of simulators, examples or tests.
 
-> Better to see what rather than heard a lot.
+> To see once rather than to heard a lot.
 
 ## Glossary
 
