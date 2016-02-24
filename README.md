@@ -4,7 +4,7 @@ This resource intended to give basic but still comprehend vision and understandi
 
 *Main idea* is not to describe or explain whatever, but give a chance to pick it up by direct touches - providing realization of concepts in code of simulators, examples or tests.
 
-> To see once rather than to heard a lot.
+> Rather see once than heard many times.
 
 ## Glossary
 
