@@ -2,35 +2,18 @@
  * This file intended to contain all syntax construction of JS
  * 
  */
-import some from 'other.js';
+import Config from 'Config.js';
 
 // inline comment
 var someThirdVar /* = undefined */ , someFifthVar = 4;
 
-const CONFIG = {
-    
-    key: value,
-    
-    sub : {
-        key1: true
-    },
-    
-    array : [1,2,3,4],
-    
-    myString: "Hello world!",
-    
-    myFunc: function(){
-        return this.myString;
-    }
-};
-
 export const helper = (a, b) => (this._id+a+b);
 
-export default class SomeClass {
+export default class BaseCar {
     
     static factory(opts){
         
-        return new SomeClass(opts);
+        return new BaseCar(opts);
     }
     
     constructor(opts){
