@@ -6,8 +6,8 @@ This resource intended to give basic but still comprehend vision and understandi
 
 > It's better to see something once than to hear about it a thousand times..
 
-## Glossary
+## Resources
 
-* [Common background](https://docs.google.com/spreadsheets/d/1gSj_gj_SCEmjsTPEn28-tUWnub2SsFywm72cCuHToMA/pubhtml?gid=507450229&single=true)
-* [Software engineering](https://docs.google.com/spreadsheets/d/1gSj_gj_SCEmjsTPEn28-tUWnub2SsFywm72cCuHToMA/pubhtml?gid=1790294405&single=true)
-* [Javascript core](https://docs.google.com/spreadsheets/d/1gSj_gj_SCEmjsTPEn28-tUWnub2SsFywm72cCuHToMA/pubhtml?gid=890809373&single=true)
+* [IT background](https://docs.google.com/spreadsheets/d/1gSj_gj_SCEmjsTPEn28-tUWnub2SsFywm72cCuHToMA/pubhtml)
+* [FrontEnd Development](https://docs.google.com/spreadsheets/d/1JE4R3LaB8GO1XmncZc8sxIdcEDkizMySiB83-iMXeyU/pubhtml)
+* [FrontEndInterview](https://docs.google.com/spreadsheets/d/1WQzE0PYDszUGK88drpFsspb5F-yawO2Df-rxqluA2SM/pubhtml)
