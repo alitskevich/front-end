@@ -2,7 +2,7 @@ const CALL_STACK = [];
 
 const ScriptEngine = {
 
-    DefFn(Parameters, SourceCode, CompiledBody) {
+    DefFn(Parameters, SourceCode, CompiledBody, This) {
 
         var Variables = [];
 
@@ -19,6 +19,7 @@ const ScriptEngine = {
             Closure: CALL_STACK[0],
             Parameters,
             Variables,
+            This,
             Body: compile(SourceCode),
             Prototype: {Constructor:Fn}
         }
@@ -38,7 +39,7 @@ const ScriptEngine = {
         CALL_STACK.unshift(new ExecutionContext(Lexen));
         try {
 
-            Fn.Body.call(null, this, Lexen, This, Args);
+            Fn.Body.call(null, this, Lexen, Fn.This || This, Args);
 
         } finally {
 
