@@ -7,11 +7,11 @@ const DEFAULT_ATTRIBUTES = {
 
 class Obj {
 
-    constructor(Proto=null) {
+    constructor(Constructor, Proto=null) {
 
         this.Properties = new Map();
-
-        this.__Proto__ = Proto;
+        this.Constructor = Constructor;
+        this.Proto = Proto;
     }
 
     DefineProperty(Id, attributes = {}) {
@@ -23,12 +23,27 @@ class Obj {
         return prop;
     }
 
+    Get__Proto__() {
+
+        // use explicit Proto or get from constructor
+        return this.Proto || this.Constructor.Prototype;
+    }
+
+    Set__Proto__(Proto) {
+        
+        if(Proto) {
+            
+            this.Proto = Proto;
+        }
+    }
+
     Get(id) {
 
         if (this.Properties.has(id)) return this.Properties.get(id);
 
         // only need of Prototype is to share its properties this host object
-        if (this.__Proto__) return this.__Proto__.Get(id);
+        const proto = this.Get__Proto__();
+        if (proto) return proto.Get(id);
 
         return undefined;
     }
