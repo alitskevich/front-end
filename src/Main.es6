@@ -1,10 +1,10 @@
 
 const Global = new LexicalEnvironment(null);
 
-function __main__($, Lx, This) {
+function __main__($, This) {
     // var User = function(name){ this.name = name;}
-    var User = $.DefFn(['name'], 'this.name = name', ($, Lx, This) => {
-        This.Set('name', Lx.Value('name'));
+    var User = $.DefFn(['name'], 'this.name = name', ($, This) => {
+        This.Set('name', $.GetValue('name'));
     });
 
     User.Prototype.title = "Mr."
@@ -17,9 +17,11 @@ function __main__($, Lx, This) {
         var result = a+b;
         return resut;
         `,
-        ($, Lx, This) => {
-            Lx.AssignValue('result', Operations.PLUS(Lx.Value('a'), Lx.Value('b')));
-            $.Return(Lx.Value('result'));
+        ($, This) => {
+
+            $.AssignValue('result', $.Realm.PLUS($.GetValue('a'), $.GetValue('b')));
+
+            $.ExitWitResult($.GetValue('result'));
         }
     )
 

@@ -34,7 +34,7 @@ const ScriptEngine = {
         CALL_STACK.unshift(new ExecutionContext(Lexen));
         try {
 
-            Fn.Body.call(null, this, Lexen, Fn.This || This, Args);
+            Fn.Body.call(null, this, Fn.This || This, Args);
 
         } finally {
 
@@ -57,12 +57,20 @@ const ScriptEngine = {
         }
     },
 
-    ExitFn(Error, Result) {
+    ExitWithResult(Result) {
+
+        const currentContext = CALL_STACK[0];
+
+        currentContext.Result = Result;
+
+        throw new Error('ok');
+    },
+
+    ExitWithError(Error) {
 
         const currentContext = CALL_STACK[0];
 
         currentContext.Error = Error;
-        currentContext.Result = Result;
 
         throw new Error('ok');
     },
@@ -74,5 +82,19 @@ const ScriptEngine = {
         this.CallFn(Fn, This, Args);
 
         return This;
+    },
+
+    GetValue(Id) {
+
+        const currentContext = CALL_STACK[0];
+
+        return currentContext.LexicalEnvironment.GetValue(Id);
+    },
+
+    AssignValue(Id) {
+
+        const currentContext = CALL_STACK[0];
+
+        return currentContext.LexicalEnvironment.AssignValue(Id);
     }
 };

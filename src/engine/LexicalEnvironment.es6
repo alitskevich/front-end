@@ -16,7 +16,7 @@ class LexicalEnvironment {
 
     GetVar(id) {
 
-        if (!this.Bindings.HasPropertyDefinition(id, true)){
+        if (!this.Bindings.HasPropertyDefinition(id)){
 
             throw new Error(`ReferenceError: variable '${id}' is not defined`);
         }
@@ -27,7 +27,7 @@ class LexicalEnvironment {
 
     DefVar(id, Value = undefined) {
 
-        if (this.Bindings.HasPropertyDefinition(id, false)){
+        if (this.Bindings.HasOwnPropertyDefinition(id)){
 
             throw new Error(`ReferenceError: variable '${id}' is already defined`);
         }
@@ -35,16 +35,16 @@ class LexicalEnvironment {
         this.Bindings.DefineProperty(id, {Value});
     }
 
-    Value(id) {
+    GetValue(id) {
 
-        return this.GetVar(id).Value;
+        return this.Bindings.Get(id);
     }
 
     AssignValue(id, value) {
 
         //GC.retain(value);
 
-        return this.GetVar(id).Value = value;
+        return this.Bindings.Set(id, Value);
     }
 
     Done() {

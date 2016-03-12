@@ -1,7 +1,9 @@
 const DEFAULT_ATTRIBUTES = {
     Value: undefined,
     isEnumerable: true,
-    isReadOnly: false
+    isReadOnly: false,
+    getter: (a)=>a,
+    setter: (a)=>a
 };
 
 export default class Obj {
@@ -23,26 +25,40 @@ export default class Obj {
         return prop;
     }
 
-    GetPropertyDefinition(Id, require) {
+    GetPropertyDefinition(Id) {
 
-        return this.Properties.get(Id) || (require ? this.DefineProperty(Id) : undefined);
+        if (this.HasOwnPropertyDefinition(Id)) {
+
+            return this.Properties.get(Id)
+        }
+
+        // use Prototype if no own property
+        if (this.__Proto__) {
+
+            return this.__Proto__.GetPropertyDefinition(Id);
+        }
+
+        return undefined;
     }
 
-    HasPropertyDefinition(id, ownOnly) {
+    HasOwnPropertyDefinition(id) {
 
-        if (this.Properties.has(id)) return true;
-
-        if (!ownOnly && this.__Proto__) return proto.Has(id);
-
-        return false;
+        return this.Properties.has(id);
     }
-    
+
+    HasPropertyDefinition(Id) {
+
+        return this.GetPropertyDefinition(Id) !== undefined;
+    }
+
     Get(id) {
 
-        if (this.Properties.has(id)) return this.Properties.get(id);
+        var prop = this.GetPropertyDefinition(Id);
 
-        // only need of Prototype is to share its properties this host object
-        if (this.__Proto__) return proto.Get(id);
+        if (prop) {
+
+            return prop.getter(prop.Value)
+        }
 
         return undefined;
     }
@@ -50,13 +66,14 @@ export default class Obj {
 
     Set(Id, Value) {
 
-        var prop = this.GetPropertyDefinition(Id, true);
+        var prop = this.HasOwnPropertyDefinition(Id) ? this.GetPropertyDefinition(Id) : this.DefineProperty(Id);
 
         if (prop.isReadOnly) {
+
             throw new Error(`AccessError: variable '${Id}' is read only`);
         }
 
-        return prop.Value = Value;
+        return prop.Value = prop.setter(Value);
     }
 
     GetKeys(ownOnly) {
