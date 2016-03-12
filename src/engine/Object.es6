@@ -1,4 +1,3 @@
-
 const DEFAULT_ATTRIBUTES = {
     Value: undefined,
     isEnumerable: true,
@@ -10,6 +9,8 @@ export default class Obj {
     constructor(Proto=null) {
 
         this.Properties = new Map();
+
+        // only need of Prototype is to share its properties if this host object has no such ones
         this.__Proto__ = Proto;
     }
 
@@ -22,11 +23,15 @@ export default class Obj {
         return prop;
     }
 
-    Has(id, ownOnly) {
+    GetPropertyDefinition(Id, require) {
+
+        return this.Properties.get(Id) || (require ? this.DefineProperty(Id) : undefined);
+    }
+
+    HasPropertyDefinition(id, ownOnly) {
 
         if (this.Properties.has(id)) return true;
 
-        // only need of Prototype is to share its properties this host object
         if (!ownOnly && this.__Proto__) return proto.Has(id);
 
         return false;
@@ -42,9 +47,10 @@ export default class Obj {
         return undefined;
     }
 
+
     Set(Id, Value) {
 
-        var prop = this.Properties.get(Id) || this.DefineProperty(Id);
+        var prop = this.GetPropertyDefinition(Id, true);
 
         if (prop.isReadOnly) {
             throw new Error(`AccessError: variable '${Id}' is read only`);

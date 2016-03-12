@@ -13,28 +13,23 @@ const ScriptEngine = {
             return CompiledBody;
         }
 
-        const currentContext = ;
+        const currentContext = CALL_STACK[0];
 
         const Fn = {
-            Closure: CALL_STACK[0],
+            Closure: currentContext,
             Parameters,
             Variables,
             This,
             Body: compile(SourceCode),
             Prototype: {Constructor:Fn}
-        }
+        };
+
         return Fn;
     },
 
     CallFn(Fn, This, Args = []) {
 
-        var Lexen = new LexicalEnvironment(Fn.Closure && Fn.Closure.LexicalEnvironment);
-
-        // define all parameters and variables BEFORE any execution, e.g. Hoisting
-        [...Fn.Parameters, ...Fn.Variables].forEach((name) => Lexen.DefVar(name));
-
-        // initialize parameters with arguments values in order of appearance
-        Fn.Parameters.forEach((name, i) => Lexen.AssignValue(name, Args[i]));
+        var Lexen = new LexicalEnvironment(Fn);
 
         CALL_STACK.unshift(new ExecutionContext(Lexen));
         try {
@@ -63,6 +58,7 @@ const ScriptEngine = {
     },
 
     ExitFn(Error, Result) {
+
         const currentContext = CALL_STACK[0];
 
         currentContext.Error = Error;
