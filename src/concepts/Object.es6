@@ -5,13 +5,12 @@ const DEFAULT_ATTRIBUTES = {
     isReadOnly: false
 };
 
-class Obj {
+export default class Obj {
 
-    constructor(Constructor, Proto=null) {
+    constructor(Proto=null) {
 
         this.Properties = new Map();
-        this.Constructor = Constructor;
-        this.Proto = Proto;
+        this.__Proto__ = Proto;
     }
 
     DefineProperty(Id, attributes = {}) {
@@ -23,27 +22,22 @@ class Obj {
         return prop;
     }
 
-    Get__Proto__() {
+    Has(id, ownOnly) {
 
-        // use explicit Proto or get from constructor
-        return this.Proto || this.Constructor.Prototype;
+        if (this.Properties.has(id)) return true;
+
+        // only need of Prototype is to share its properties this host object
+        if (!ownOnly && this.__Proto__) return proto.Has(id);
+
+        return false;
     }
-
-    Set__Proto__(Proto) {
-        
-        if(Proto) {
-            
-            this.Proto = Proto;
-        }
-    }
-
+    
     Get(id) {
 
         if (this.Properties.has(id)) return this.Properties.get(id);
 
         // only need of Prototype is to share its properties this host object
-        const proto = this.Get__Proto__();
-        if (proto) return proto.Get(id);
+        if (this.__Proto__) return proto.Get(id);
 
         return undefined;
     }
@@ -59,8 +53,12 @@ class Obj {
         return prop.Value = Value;
     }
 
-    GetKeys() {
-
-        return [...this.Properties.values()].filter((V) => V.isEnumerable).map(() => V.Id)
+    GetKeys(ownOnly) {
+        
+        const preceding = ownOnly || !this.__Proto__ ? [] : this.__Proto__.GetKeys(true);
+        
+        return [...preceding, ...this.Properties.values()]
+            .filter((V) => (V.isEnumerable && !preceding.includes(V.Id)))
+            .map(() => V.Id)
     }
 }
