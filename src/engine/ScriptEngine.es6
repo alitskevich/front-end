@@ -1,90 +1,112 @@
-const CALL_STACK = [];
+export class ScriptEngine {
 
-const ScriptEngine = {
+    constructor(GlobalContext = {}, Realm = {}){
 
-    DefFn(Parameters, SourceCode, CompiledBody, This, Catch) {
+        this.CurrentContext = GlobalContext;
+        this.Realm = Realm;
+    }
 
-        var Variables = [];
+    //////////////////////////////////////
+    // Objects
+    //////////////////////////////////////
 
-        function compile(SourceCode) {
-            // collect variable declarations
-            SourceCode.replace(/var (\w*)/g, (s, name) => Variables.push(name));
+    CreateObject(Prototype) {
 
-            return CompiledBody;
-        }
+        return new Obj(Prototype);
+    }
 
-        const currentContext = CALL_STACK[0];
+    NewObject(ConstructorFn, Args) {
+
+        var This = this.CreateObject(ConstructorFn.Prototype);
+
+        this.ApplyFunction(ConstructorFn, This, Args);
+
+        return This;
+    }
+
+    //////////////////////////////////////
+    // Functions
+    //////////////////////////////////////
+
+    DefineFunction({Name, Parameters=[], SourceCode, CompiledBody, BoundThis = null, Catch, Prototype}) {
+
+        const {Variables, Body} = ScrpitTranslator.translate(SourceCode, CompiledBody);
 
         const Fn = {
-            Closure: currentContext,
+            Name,
             Parameters,
             Variables,
-            This,
-            Body: compile(SourceCode),
-            Prototype: {Constructor:Fn},
-            Catch
+            Body,
+            BoundThis,
+            Catch,
+
+            Prototype: {Constructor:Fn, ...Prototype},
+            LexicalContext: this.CurrentContext
         };
 
         return Fn;
-    },
+    }
 
-    CallFn(Fn, This, Args = []) {
+    ApplyFunction(Fn, This, Args = []) {
 
-        const currentContext = new ExecutionContext(Fn)
-        
-        CALL_STACK.unshift(currentContext);
-        
-        Fn.Body.call(null, this, Fn.This || This, Args);
+        this.CurrentContext = new ExecutionContext({
+            This: Fn.BoundThis || This,
+            OuterScope: Fn.LexicalContext.Scope,
+            PreviousContext: this.CurrentContext
+        });
 
-        CALL_STACK.shift();
-        
-        if (currentContext.Error) {
+        // define parameters and initialize them with arguments values in order of appearance
+        Fn.Parameters.forEach((name, i) => this.DefineVariable(name, Args[i]));
 
-            throw currentContext.Error;
+        // define all variables BEFORE any execution, e.g. Hoisting
+        Fn.Variables.forEach((name) => this.DefineVariable(name));
 
-        } else {
+        const Result = Fn.Body.apply(this.CurrentContext, Args);
 
-           return currentContext.Result;
+        return Result;
+       
+    }
+
+    ExitFunctionWithResult(Result) {
+
+        this.CurrentContext = this.CurrentContext.Exit();
+
+        return Result;
+    }
+
+    ExitFunctionWithError(Error) {
+
+        let context = this.CurrentContext;
+
+        while(!context.Catch){
+
+            context = context.Exit();
         }
 
-        currentContext.destroy();
-       
-    },
+        this.CurrentContext = context;
 
-    ExitWithResult(Result) {
+        const Result = context.Catch.Body.apply(this.CurrentContext, [Error]);
 
-        const currentContext = CALL_STACK[0];
+        return this.ExitFunctionWithResult(Result);
 
-        currentContext.Result = Result;
-    },
+    }
 
-    ExitWithError(Error) {
+    //////////////////////////////////////
+    // Variables
+    //////////////////////////////////////
 
-        const currentContext = CALL_STACK[0];
+    DefineVariable(Id, InitialValue) {
 
-        currentContext.Error = Error;
-    },
-
-    NewObj(Fn, Args) {
-
-        var This = new Obj(Fn.Prototype);
-
-        this.CallFn(Fn, This, Args);
-
-        return This;
-    },
+        return this.CurrentContext.DefineVariable(Id, InitialValue);
+    }
 
     GetValue(Id) {
 
-        const currentContext = CALL_STACK[0];
-
-        return currentContext.LexicalEnvironment.GetValue(Id);
-    },
+        return this.CurrentContext.GetValueOfVariable(Id);
+    }
 
     AssignValue(Id) {
 
-        const currentContext = CALL_STACK[0];
-
-        return currentContext.LexicalEnvironment.AssignValue(Id);
+        return this.CurrentContext.AssignValueOfVariable(Id);
     }
-};
+}

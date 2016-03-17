@@ -1,5 +1,9 @@
 # front-end
 
+> У меня для вас две новости:
+>    - хорошая: ИЗУЧЕНИЕ джаваскрипт отменяется
+>    - вторая: вместо этого, мы его СОЗДАДИМ заново
+
 This resource intended to give basic but still comprehend vision and understanding in field of modern Front-End Development.
 
 *Main idea* is not to describe or explain whatever, but give a chance to pick it up by direct touches - providing realization of concepts in code of simulators, examples or tests.

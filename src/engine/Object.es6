@@ -16,9 +16,13 @@ export default class Obj {
         this.__Proto__ = Proto;
     }
 
-    DefineProperty(Id, attributes = {}) {
+    //////////////////////////////////////
+    // Property Definition
+    //////////////////////////////////////
 
-        var prop = {Id, ...DEFAULT_ATTRIBUTES, ...attributes};
+    DefineProperty(Id, Attributes = {}) {
+
+        const prop = {...DEFAULT_ATTRIBUTES, ...Attributes, Id};
 
         this.Properties.set(Id, prop);
 
@@ -51,6 +55,10 @@ export default class Obj {
         return this.GetPropertyDefinition(Id) !== undefined;
     }
 
+    //////////////////////////////////////
+    // Property Values access
+    //////////////////////////////////////
+
     Get(id) {
 
         var prop = this.GetPropertyDefinition(Id);
@@ -76,12 +84,34 @@ export default class Obj {
         return prop.Value = prop.setter(Value);
     }
 
-    GetKeys(ownOnly) {
-        
-        const preceding = ownOnly || !this.__Proto__ ? [] : this.__Proto__.GetKeys(true);
-        
-        return [...preceding, ...this.Properties.values()]
-            .filter((V) => (V.isEnumerable && !preceding.includes(V.Id)))
-            .map(() => V.Id)
+    //////////////////////////////////////
+    // Property keys
+    //////////////////////////////////////
+
+    GetKeys() {
+
+        if (!this.__Proto__){
+
+            return this.GetOwnKeys();
+        }
+
+        const preceding =  this.__Proto__.GetKeys();
+
+        return [...preceding, ...this.GetOwnKeys().filter(id => !preceding.includes(id))]
+
+    }
+
+    GetOwnKeys() {
+
+        return [...this.Properties.values()].filter(p => p.isEnumerable).map(p => p.Id);
+    }
+
+    //////////////////////////////////////
+    // Auxilary
+    //////////////////////////////////////
+
+    ToString(){
+
+        return `[${this.Get('constructor').name}]`;
     }
 }

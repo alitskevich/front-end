@@ -7,15 +7,15 @@ const REGISTRY = new Map();
 
 const NON_OBJECT = {retainCount:0};
 
-function getItem(target) {
+function getItem(obj) {
 
     let r = NON_OBJECT;
-    if (isObject(target)) {
+    if (isObject(obj)) {
 
-        r = REGISTRY.has(target);
+        r = REGISTRY.has(obj);
         if (!r) {
 
-            REGISTRY.set(target, r = {target, retainCount})
+            REGISTRY.set(obj, r = {obj, retainCount})
 
         }
     }
@@ -27,20 +27,25 @@ function clean() {
     REGISTRY.filter(r=>!r.retainCount).forEach( r => destroy(r));
 }
 
-function destroy(target) {
+function destroy(obj) {
     // [native]
 }
 
-class GarbageCollector {
+export default class GarbageCollector {
 
-    release(target) {
+    release(obj) {
 
-        getItem(target).retainCount--;
+        getItem(obj).retainCount--;
     }
 
-    retain(target){
+    releaseAll(targetMap) {
 
-        getItem(target).retainCount++;
+        targetMap.forEach((obj)=>getItem(obj).retainCount--);
+    }
+    
+    retain(obj, oldValue){
+
+        getItem(obj).retainCount++;
     }
 
     start (){
