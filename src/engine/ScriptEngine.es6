@@ -2,7 +2,7 @@ const CALL_STACK = [];
 
 const ScriptEngine = {
 
-    DefFn(Parameters, SourceCode, CompiledBody, This) {
+    DefFn(Parameters, SourceCode, CompiledBody, This, Catch) {
 
         var Variables = [];
 
@@ -21,7 +21,8 @@ const ScriptEngine = {
             Variables,
             This,
             Body: compile(SourceCode),
-            Prototype: {Constructor:Fn}
+            Prototype: {Constructor:Fn},
+            Catch
         };
 
         return Fn;
@@ -29,32 +30,25 @@ const ScriptEngine = {
 
     CallFn(Fn, This, Args = []) {
 
-        var Lexen = new LexicalEnvironment(Fn);
+        const currentContext = new ExecutionContext(Fn)
+        
+        CALL_STACK.unshift(currentContext);
+        
+        Fn.Body.call(null, this, Fn.This || This, Args);
 
-        CALL_STACK.unshift(new ExecutionContext(Lexen));
-        try {
+        CALL_STACK.shift();
+        
+        if (currentContext.Error) {
 
-            Fn.Body.call(null, this, Fn.This || This, Args);
+            throw currentContext.Error;
 
-        } finally {
+        } else {
 
-            var Context = CALL_STACK.shift();
-            try {
-
-                if (Context.Error) {
-
-                    throw Context.Error;
-
-                } else {
-
-                    return Context.Result;
-                }
-
-            } finally {
-
-                Context.destroy();
-            }
+           return currentContext.Result;
         }
+
+        currentContext.destroy();
+       
     },
 
     ExitWithResult(Result) {
@@ -62,8 +56,6 @@ const ScriptEngine = {
         const currentContext = CALL_STACK[0];
 
         currentContext.Result = Result;
-
-        throw new Error('ok');
     },
 
     ExitWithError(Error) {
@@ -71,8 +63,6 @@ const ScriptEngine = {
         const currentContext = CALL_STACK[0];
 
         currentContext.Error = Error;
-
-        throw new Error('ok');
     },
 
     NewObj(Fn, Args) {
