@@ -1,15 +1,16 @@
 
 export default class ExecutionContext {
 
-    constructor(Lx){
+    constructor(Fn, PreviousExecutionContext) {
 
-        this.LexicalEnvironment = Lx;
+        this.Fn = Fn;
+        this.PreviousExecutionContext = PreviousExecutionContext;
+        this.LexicalEnvironment = new LexicalEnvironment(Fn);
         this.Result =  undefined;
         this.Error = undefined;
-
     }
 
-    destroy(){
-
+    Done() {
+        this.LexicalEnvironment.Done();
     }
 }
