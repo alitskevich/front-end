@@ -1,4 +1,4 @@
-import GC from './GarbageCollector.es6';
+import  Realm from './Realm.es6';
 
 export default class ExecutionContext {
 
@@ -9,6 +9,9 @@ export default class ExecutionContext {
         this.Scope = new Obj(OuterScope);
 
         this.PreviousContext = PreviousContext;
+
+        this.Realm = Realm;
+
     }
 
     DefineVariable(Id, Value = undefined) {
@@ -22,6 +25,7 @@ export default class ExecutionContext {
     }
 
     GetValue(Id) {
+
         if (!this.Scope.HasPropertyDefinition(Id)) {
 
             throw new Error(`ReferenceError: variable '${Id}' is not defined`);
@@ -32,14 +36,12 @@ export default class ExecutionContext {
 
     AssignValue(Id, Value) {
 
-        GC.retain(Value, this.GetValueOfVariable(Id));
-
         return this.Scope.Set(Id, Value);
     }
 
     Exit() {
 
-        GC.releaseAll(this.Scope);
+        this.Scope.$release();
 
         return this.PreviousContext;
     }

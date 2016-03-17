@@ -1,10 +1,9 @@
 import  ExecutionContext from './ExecutionContext.es6';
 import  ScriptEngine from './ScriptEngine.es6';
-import  Realm from './Realm.es6';
 
 const globalContext = new ExecutionContext(null);
 
-const scriptEngine = new ScriptEngine(globalContext, Realm);
+const scriptEngine = new ScriptEngine(globalContext);
 
 const __main__ = scriptEngine.DefineFunction({
     Name: '__main__',

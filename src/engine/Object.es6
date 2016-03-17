@@ -1,3 +1,5 @@
+import GC from './GarbageCollector.es6';
+
 const DEFAULT_ATTRIBUTES = {
 
     Value: undefined,
@@ -15,6 +17,11 @@ export default class Objekt {
 
         // only need of Prototype is to share its properties if this host object has no such ones
         this.__Proto__ = Proto;
+    }
+
+    $release(){
+
+        GC.releaseAll(this);
     }
 
     //////////////////////////////////////
@@ -81,6 +88,8 @@ export default class Objekt {
 
             throw new Error(`AccessError: variable '${Id}' is read only`);
         }
+
+        GC.retain(Value, this.Get(Id));
 
         return prop.Value = prop.Setter(Value);
     }

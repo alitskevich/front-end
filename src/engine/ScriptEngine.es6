@@ -1,9 +1,8 @@
 export class ScriptEngine {
 
-    constructor(GlobalContext = {}, Realm = {}){
+    constructor(InitialContext = {}){
 
-        this.CurrentContext = GlobalContext;
-        this.Realm = Realm;
+        this.CurrentContext = InitialContext;
     }
 
     //////////////////////////////////////
@@ -105,8 +104,8 @@ export class ScriptEngine {
         return this.CurrentContext.GetValueOfVariable(Id);
     }
 
-    AssignValue(Id) {
+    AssignValue(Id, Value) {
 
-        return this.CurrentContext.AssignValueOfVariable(Id);
+        return this.CurrentContext.AssignValueOfVariable(Id, Value);
     }
 }
