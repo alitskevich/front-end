@@ -1,12 +1,13 @@
 const DEFAULT_ATTRIBUTES = {
+
     Value: undefined,
-    isEnumerable: true,
-    isReadOnly: false,
-    getter: (a)=>a,
-    setter: (a)=>a
+    IsEnumerable: true,
+    IsReadOnly: false,
+    Getter: a=>a,
+    Setter: a=>a
 };
 
-export default class Obj {
+export default class Objekt {
 
     constructor(Proto=null) {
 
@@ -65,7 +66,7 @@ export default class Obj {
 
         if (prop) {
 
-            return prop.getter(prop.Value)
+            return prop.Getter(prop.Value)
         }
 
         return undefined;
@@ -76,12 +77,12 @@ export default class Obj {
 
         var prop = this.HasOwnPropertyDefinition(Id) ? this.GetPropertyDefinition(Id) : this.DefineProperty(Id);
 
-        if (prop.isReadOnly) {
+        if (prop.IsReadOnly) {
 
             throw new Error(`AccessError: variable '${Id}' is read only`);
         }
 
-        return prop.Value = prop.setter(Value);
+        return prop.Value = prop.Setter(Value);
     }
 
     //////////////////////////////////////
@@ -98,16 +99,15 @@ export default class Obj {
         const preceding =  this.__Proto__.GetKeys();
 
         return [...preceding, ...this.GetOwnKeys().filter(id => !preceding.includes(id))]
-
     }
 
     GetOwnKeys() {
 
-        return [...this.Properties.values()].filter(p => p.isEnumerable).map(p => p.Id);
+        return [...this.Properties.values()].filter(p => p.IsEnumerable).map(p => p.Id);
     }
 
     //////////////////////////////////////
-    // Auxilary
+    // Serialization
     //////////////////////////////////////
 
     ToString(){
