@@ -6,6 +6,7 @@ const globalContext = new ExecutionContext(null);
 const scriptEngine = new ScriptEngine(globalContext);
 
 const __main__ = scriptEngine.DefineFunction({
+
     Name: '__main__',
     Parameters:[],
     SourceCode:`
@@ -15,9 +16,9 @@ const __main__ = scriptEngine.DefineFunction({
         var User = function(name) {
 
             this.name = name;
-        }
 
-        User.prototype.greeting = function(){ return prefix + ', ' + this.name};
+            this.greeting = function(){ return prefix + ', ' + this.name};
+        }
 
         var user = new User('John');
 
@@ -30,11 +31,9 @@ const __main__ = scriptEngine.DefineFunction({
 
         $.AssignVariable('User', $.DefineFunction(/*...*/));
 
-        $.AssignVariable('User.Prototype.greeting', $.DefineFunction(/*...*/));
-
         $.AssignVariable('user', $.NewObject($.GetValue('User'), ['John']));
 
-        $.ExitFunctionWithResult( $.ApplyFunction($.GetValue('user.greeting'), $.GetValue('user'), []));
+        $.ExitWithResult( $.ApplyFunction($.GetValue('user.greeting'), $.GetValue('user'), []));
     }
 });
 

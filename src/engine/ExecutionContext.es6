@@ -1,48 +1,68 @@
 import  Realm from './Realm.es6';
+import CreateObject from './CreateObject.es6'
 
 export default class ExecutionContext {
 
-    constructor({This, OuterScope, PreviousContext}) {
+    constructor({This, LexicalContext, Catch, Engine}) {
 
         this.This = This;
 
-        this.Scope = new Obj(OuterScope);
-
-        this.PreviousContext = PreviousContext;
+        this.VariableScope = CreateObject(LexicalContext.VariableScope);
 
         this.Realm = Realm;
 
+        this.Engine = Engine;
+
     }
+
+    $release() {
+
+        this.This = null;
+
+        this.VariableScope.$release();
+    }
+
+    //////////////////////////////////////
+    // Variables
+    //////////////////////////////////////
 
     DefineVariable(Id, Value = undefined) {
 
-        if (this.Scope.HasOwnPropertyDefinition(Id)) {
+        if (this.VariableScope.HasOwnPropertyDefinition(Id)) {
 
             throw new Error(`ReferenceError: variable '${Id}' is already defined`);
         }
 
-        this.Scope.DefineProperty(Id, {Value});
+        this.VariableScope.DefineProperty(Id, {Value});
     }
 
     GetValue(Id) {
 
-        if (!this.Scope.HasPropertyDefinition(Id)) {
+        if (!this.VariableScope.HasPropertyDefinition(Id)) {
 
             throw new Error(`ReferenceError: variable '${Id}' is not defined`);
         }
 
-        return this.Scope.GetPropertyDefinition(Id).Value;
+        return this.VariableScope.GetPropertyDefinition(Id).Value;
     }
 
     AssignValue(Id, Value) {
 
-        return this.Scope.Set(Id, Value);
+        return this.VariableScope.Set(Id, Value);
     }
 
-    Exit() {
+    //////////////////////////////////////
+    // Control Flow
+    //////////////////////////////////////
 
-        this.Scope.$release();
+    ExitWithResult(Result) {
 
-        return this.PreviousContext;
+        return this.Engine.ExitFunctionWithResult(Result);
+    }
+
+    ExitWithError(Error) {
+
+        return return this.Engine.ExitFunctionWithError(Error);
+
     }
 }

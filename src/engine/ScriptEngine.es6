@@ -1,8 +1,10 @@
+import CreateObject from './CreateObject.es6'
+
 export class ScriptEngine {
 
-    constructor(InitialContext = {}){
+    constructor(InitialContext){
 
-        this.CurrentContext = InitialContext;
+        this.ExecutionStack = [InitialContext];
     }
 
     //////////////////////////////////////
@@ -11,16 +13,16 @@ export class ScriptEngine {
 
     CreateObject(Prototype) {
 
-        return new Obj(Prototype);
+        return CreateObject(Prototype);
     }
 
     NewObject(ConstructorFn, Args) {
 
-        var This = this.CreateObject(ConstructorFn.Prototype);
+        var Obj = CreateObject(ConstructorFn.Prototype);
 
-        this.ApplyFunction(ConstructorFn, This, Args);
+        this.ApplyFunction(ConstructorFn, Obj, Args);
 
-        return This;
+        return Obj;
     }
 
     //////////////////////////////////////
@@ -32,6 +34,7 @@ export class ScriptEngine {
         const {Variables, Body} = ScrpitTranslator.translate(SourceCode, CompiledBody);
 
         const Fn = {
+
             Name,
             Parameters,
             Variables,
@@ -40,7 +43,7 @@ export class ScriptEngine {
             Catch,
 
             Prototype: {Constructor:Fn, ...Prototype},
-            LexicalContext: this.CurrentContext
+            LexicalContext: this.ExecutionContext
         };
 
         return Fn;
@@ -48,11 +51,14 @@ export class ScriptEngine {
 
     ApplyFunction(Fn, This, Args = []) {
 
-        this.CurrentContext = new ExecutionContext({
+        const CurrentContext = new ExecutionContext({
             This: Fn.BoundThis || This,
-            OuterScope: Fn.LexicalContext.Scope,
-            PreviousContext: this.CurrentContext
+            LexicalContext: Fn.LexicalContext,
+            Catch: Fn.Catch,
+            Engine: this,
         });
+
+        this.ExecutionStack.unshift(CurrentContext);
 
         // define parameters and initialize them with arguments values in order of appearance
         Fn.Parameters.forEach((name, i) => this.DefineVariable(name, Args[i]));
@@ -60,7 +66,7 @@ export class ScriptEngine {
         // define all variables BEFORE any execution, e.g. Hoisting
         Fn.Variables.forEach((name) => this.DefineVariable(name));
 
-        const Result = Fn.Body.apply(this.CurrentContext, Args);
+        const Result = Fn.Body.apply(CurrentContext, Args);
 
         return Result;
        
@@ -68,44 +74,27 @@ export class ScriptEngine {
 
     ExitFunctionWithResult(Result) {
 
-        this.CurrentContext = this.CurrentContext.Exit();
+        this.ExecutionStack.shift();
 
         return Result;
     }
 
     ExitFunctionWithError(Error) {
 
-        let context = this.CurrentContext;
+        let CurrentContext = this.ExecutionStack[0];
 
-        while(!context.Catch){
+        while(!CurrentContext.Catch){
 
-            context = context.Exit();
+            CurrentContext = this.ExecutionStack.shift();
         }
 
-        this.CurrentContext = context;
+        const Result = this.ApplyFunction(CurrentContext.Catch, CurrentContext.This, [Error]);
 
-        const Result = context.Catch.Body.apply(this.CurrentContext, [Error]);
+        this.ExecutionStack.shift();
 
-        return this.ExitFunctionWithResult(Result);
+        return Result;
 
     }
 
-    //////////////////////////////////////
-    // Variables
-    //////////////////////////////////////
 
-    DefineVariable(Id, InitialValue) {
-
-        return this.CurrentContext.DefineVariable(Id, InitialValue);
-    }
-
-    GetValue(Id) {
-
-        return this.CurrentContext.GetValueOfVariable(Id);
-    }
-
-    AssignValue(Id, Value) {
-
-        return this.CurrentContext.AssignValueOfVariable(Id, Value);
-    }
 }

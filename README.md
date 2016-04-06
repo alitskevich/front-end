@@ -1,12 +1,10 @@
 # Front-End
 
-> У меня для вас две новости:
->    - хорошая: ИЗУЧЕНИЕ джаваскрипт отменяется
->    - вторая: вместо этого, мы его СОЗДАДИМ заново
-
-*Main idea* is not to describe/explain whatever, but give a direct insight by touching some simplified but comprehensive simulation.
+This repo contains a code intended to express what is JavaScript language itself, how it works, how to be used in front-end development.
 
 > It's better to see something once than to hear about it a thousand times.
+
+
 
 ## Resources
 
