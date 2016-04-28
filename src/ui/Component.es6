@@ -1,17 +1,15 @@
 import {functionName, getter, getStatic} from './utils/Utils.es6';
-import {h} from './jsx/JsxAdapter.es6';
+import {h, keye} from './jsx/JsxAdapter.es6';
+import Pipes from './utils/Pipes.es6';
 
 let COUNTER = 0;
-const PIPES = {};
 
 /**
  * The component base.
  */
 export default class Component {
 
-    static addPipe = function (k, v) {
-        PIPES[k] = v
-    };
+    static addPipe = Pipes.add;
 
     constructor(props, opts) {
 
@@ -19,9 +17,11 @@ export default class Component {
 
         this._id = functionName(this.constructor) + (++COUNTER);
 
-        this.state = {...getStatic(this, 'DEFAULTS'), ...props};
+        this.props = {...getStatic(this, 'DEFAULTS'), ...props};
 
-        this.jsx = this.render();
+        this.state = {};
+
+        this.jsx = this.constructor.$TEMPLATE || (this.constructor.$TEMPLATE=keye(this.render()));
 
         this.render = ()=> h.apply(this, this.jsx);
 
@@ -48,7 +48,30 @@ export default class Component {
             return value.call(this);
         }
 
-        return getter.call(this.state, key);
+        value = this.$ && this.$[key];
+        if (value !== undefined) {
+
+            return value;
+        }
+
+        value = this[key];
+        if (value !== undefined && value.bind) {
+
+            return (this.$ ||(this.$={}))[key] = value.bind(this);
+        }
+
+        return this.getState(key);
+    }   
+    
+    getState(key) {
+
+        let value =  getter.call(this.state, key);
+        if (value !== undefined) {
+
+            return value;
+        }
+
+        return getter.call(this.props, key);
     }
 
     set(key, value, cb) {
@@ -60,9 +83,11 @@ export default class Component {
 
         if (delta) {
 
-            const changedKeys = Object.keys(delta).filter(key=>(this.state[key] !== delta[key]));
+            const changedKeys = Object.keys(delta).filter(key=>(this.getState(key) !== delta[key]));
 
             if (changedKeys.length) {
+
+                //this.log('update', changedKeys);
 
                 Object.assign(this.state, delta);
 
@@ -73,28 +98,49 @@ export default class Component {
         }
     }
 
+    updateProps(delta) {
+
+        if (delta) {
+
+            const changedKeys = Object.keys(delta).filter(key=>(this.getState(key) !== delta[key]));
+
+            if (changedKeys.length) {
+
+                //this.log('updateProps', changedKeys);
+
+                changedKeys.forEach(key=>{
+                    this.props[key] = delta[key];
+                    delete this.state[key]
+                });
+
+
+                this.didUpdatedProps(this.props, delta)
+            }
+        }
+    }
+
+
+    didUpdatedProps(props, delta){
+    }
     ////////////////////////
     //// Routines
     ///////////////////////
 
-    getUpdateOnClick() {
+    updateOnClick(ev){
 
-        return (ev)=> this.update({...ev.currentTarget.dataset});
+        this.update({...ev.currentTarget.dataset});
     }
 
     hook(key, ...args) {
 
-        const cb = this.state[key];
+        const cb = this.props[key];
 
         return cb && cb.apply(this, args) || null;
     }
 
     pipe(value, pipes) {
 
-        if (typeof pipes==='string'){
-            pipes = pipes.split('|');
-        }
-        return pipes.map(p => p.trim()).filter(p=>PIPES[p]).reduce((value, p)=>PIPES[p](value), value)
+        return Pipes.apply(value, pipes);
     }
 
     log(message, ...data) {

@@ -1,6 +1,8 @@
 import {ADAPTERS, OPS, SPECIAL_TAGS} from './JsxConsts.es6';
 import {resolveProp} from './JsxPropsResolver.es6';
 
+let COUNTER = 0;
+
 export function h(type, props, ...children) {
 
     if (SPECIAL_TAGS.includes(type)) {
@@ -15,7 +17,22 @@ export function h(type, props, ...children) {
         }
     }
 
+
     return this::createElement(type, props, ...children)
+}
+
+export function keye(node) {
+
+    if (node && typeof node !== 'string') {
+        if (!node[1]) {
+            node[1] = {}
+        }
+        node[1].$key = COUNTER++;
+        node.forEach((n, i)=>(i > 1 ? keye(n) : 0))
+    }
+
+    return node;
+
 }
 
 function createElement(type, props, ...children) {
@@ -37,13 +54,15 @@ function createElement(type, props, ...children) {
 
             if (!data) return null;
 
+            const $key = props.$key
+
             const newProps = Object.keys(props).filter(key => (key !== 'each')).reduce((r, p) => ((r[p] = props[p]), r), {});
 
-            return [].concat(...data.map(d => {
+            return [].concat(...data.map((d, index) => {
 
                 this.state[scopeId] = d;
 
-                return createElement.call(this, type, newProps, ...children);
+                return createElement.call(this, type, {...newProps, $key: $key+"$"+(d.key||d.id||(COUNTER++))}, ...children);
 
             }));
         }
@@ -72,18 +91,22 @@ function createElement(type, props, ...children) {
         props = this::resolveProps(props, isComponent);
     }
 
-    children = this::resolveChildren(children);
+    children = this::resolveChildren(children, props.$key);
+
     if (type === 'component') {
 
         type = props.type;
 
         isComponent = true;
     }
+
+    children = (children.length) ? children : null;
+
     return SPECIAL_TAGS.includes(type)
-        ? (children.length) ? children : null
+        ? children
         : (isComponent
             ? {type, props: {...props, children}}
-            : {type, props, children: (children.length ? children : null)}
+            : {type, props: {...props}, children}
     );
 
 }
@@ -107,7 +130,9 @@ function resolveProps(props, isComponent) {
     }, {});
 }
 
-function resolveChildren(ch) {
+function resolveChildren(ch, keyPrefix) {
+
+    let cnt=0;
 
     return ch.reduce((r, c) => {
 
@@ -117,7 +142,7 @@ function resolveChildren(ch) {
 
         } else {
 
-            const sub = createElement.apply(this, c);
+            const sub = createElement.call(this, c[0],{...c[1], $key:keyPrefix+"."+c[1].$key},...c.slice(2));
             if (sub) {
                 if (Array.isArray(sub)) {
                     r.push(...sub.filter(c=>c));

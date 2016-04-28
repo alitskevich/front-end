@@ -1,54 +1,75 @@
 import Component from './Component.es6';
 
-import {findDOMElement, applyDOMAttributes, clearTrailing} from './utils/DOMUtils.es6';
+import {findDOMElement, clearAfter} from './utils/DOMUtils.es6';
 
 Component.prototype.invalidate = function () {
 
-    render(this);
+    this.element = this::redraw(this.render(), this.parentElt, this.prevElt);
 }
 
-export function bootstrap(rootComponentClass, props, parentElt) {
+export function bootstrap(rootType, props, parentElt) {
 
-    render(new rootComponentClass(props, {parentElt}));
+    const root = new rootType(props, {parentElt});
+
+    root.invalidate();
+
+    root.init && root.init();
+
+    return root;
 }
 
-export function render(c) {
+function redraw(meta, parentElt, prevElt) {
 
-    c::apply(c.render(), {parentElt: c.parentElt, alreadyUsedElt: c.alreadyUsedElt});
-}
-
-function apply(meta, context) {
-
-    const parentElt = context.parentElt;
+    let element = null;
 
     if (typeof meta.type === 'function') {
 
-        const c = new meta.type(meta.props, {parentElt});
+        const key = meta.props.$key;
 
-        c::apply(c.render(), context);
+        let c = this.subs && this.subs[key];
+        let isNew=false;
+        if (c){
 
-    } else {
+            c.parentElt = parentElt;
+            c.prevElt = prevElt;
 
-        const element = this::resolveDomElement(meta, context);
+            c.updateProps(meta.props);
 
-        const children = meta.children;
-        const ctx = {parentElt: element};
-        if (children) {
-            const c = {};
-            children.map(m=>c::apply(m, ctx));
+        } else {
+            c = (this.subs || (this.subs={}))[key] = new meta.type(meta.props, {parentElt, prevElt})
+            isNew=true;
         }
-        clearTrailing(ctx);
-    }
-}
 
-function resolveDomElement(meta, context) {
+        (this.retainedSubs||(this.retainedSubs={}))[key]=c;
 
-    if (context.alreadyUsedElt) {
+        c.retainedSubs={};
+        element = c.element = c::redraw(c.render(), parentElt, prevElt);
+        if (c.subs){
+            c.subs = Object.keys(c.subs).reduce((subs,key)=>{
+                const sub= c.subs[key];
+                if (c.retainedSubs[key]){
+                    subs[key] = sub;
+                } else {
+                    sub.done && sub.done();
+                }
+                return subs;
+            },{});
+        }
 
-        return applyDOMAttributes(context.alreadyUsedElt, meta.props)
+
+        if (isNew){
+            c.init && c.init();
+        }
 
     } else {
 
-        return this.alreadyUsedElt = findDOMElement(meta, context);
+        element = findDOMElement(meta, parentElt, prevElt);
+
+        const lastChildElt = meta.children && meta.children.reduce((cursor,meta)=>this::redraw(meta, element, cursor), null);
+
+        clearAfter(element, lastChildElt);
+
     }
+
+    return element;
 }

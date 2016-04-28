@@ -1,7 +1,7 @@
 const EMPTY_STR = {'': 1, '0': 1, 'false': 1, 'null': 1, 'undefined': 1};
 import {resolveProp} from './JsxPropsResolver.es6';
 
-export const SPECIAL_TAGS =['for', 'else','block','children'];
+export const SPECIAL_TAGS =['else','block','children'];
 
 export const OPS = {
     'is': (a, b) => (a === b),

@@ -1,33 +1,103 @@
+const w3="http://www.w3.org/";
 const DOMNamespaces = {
-    html: 'http://www.w3.org/1999/xhtml',
-    mathml: 'http://www.w3.org/1998/Math/MathML',
-    svg: 'http://www.w3.org/2000/svg'
+    html: w3+'1999/xhtml',
+    mathml: w3+'1998/Math/MathML',
+    svg: w3+'2000/svg'
 };
 
 const flagAttrs = {
     disabled: 'yes',
     selected: "true"
-}
+};
 
-export function setDOMAttribute(e, k, value) {
-    if (typeof value === 'function') {
-        e.$listeners.push([k, value]);
-        e.addEventListener(k, value, false);
+const instantAttrs = {
+    value: 1
+};
+
+const addEventListener = window.addEventListener ? function(e,eventName, listener) {
+    e.addEventListener(eventName, listener, false);
+} : function(e,eventName, listener) {
+    e.attachEvent("on" + eventName, listener);
+};
+
+export function findDOMElement(meta, parentElt, prevElt) {
+
+
+    const placeholder = (prevElt ? prevElt.nextSibling : parentElt.firstChild) || null;
+
+    let c = placeholder;
+
+    for (;c &&!isMatched(c, meta);c = c.nextSibling);
+
+    if (!c) {
+
+        c = createDOMElement(meta, parentElt._namespaceURI);
+
+        parentElt.insertBefore(c, placeholder);
+
     } else {
 
-        if (flagAttrs[k]) {
+        applyDOMAttributes(c, meta.props);
 
-            e[k] = value ? true : null;
+        if (placeholder && c !== placeholder) {
+
+            parentElt.insertBefore(c, placeholder);
+        }
+    }
+
+    return c;
+}
+
+export function createDOMElement(meta, namespace) {
+
+    let e = null;
+    if (meta.type == '#text') {
+
+        e = document.createTextNode(meta.props.text);
+
+    } else {
+
+        namespace = DOMNamespaces[meta.type] || namespace;
+
+        if (namespace) {
+
+            e = document.createElementNS(namespace, meta.type);
+
+            e._namespaceURI = namespace;
 
         } else {
 
-            if (e.getAttribute(k) != value) {
-                e.setAttribute(k, value);
-            }
+            e = document.createElement(meta.type);
+
         }
+
+        const props = meta.props;
+        if (props) {
+
+            e.$listeners = [];
+
+            Object.keys(props).map(k => setDOMAttribute(e, k, props[k]));
+        }
+    }
+
+    return e;
+}
+
+export function clearAfter(parent, c) {
+
+    c = c ? c.nextSibling : parent.firstChild;
+
+    while (c) {
+        let t = c;
+        c=c.nextSibling;
+        parent.removeChild(t);
     }
 }
 
+function isMatched(e, meta) {
+
+    return e.nodeName.toLowerCase() === meta.type.toLowerCase() && (!meta.props.$key || meta.props.$key===e.$key)
+}
 
 export function applyDOMAttributes(e, props) {
     if (props) {
@@ -51,97 +121,33 @@ export function applyDOMAttributes(e, props) {
     return e;
 }
 
-export function isMatched(cursor, meta) {
+function setDOMAttribute(e, k, value) {
+    if (k === '$key') {
 
-    return cursor.nodeName.toUpperCase() === meta.type.toUpperCase()
-}
+        e.$key =  value;
 
-export function selectDOMElement(meta, ctx) {
+    } else if (typeof value === 'function') {
 
-    const parentElt = ctx.parentElt;
-
-    let cursor = ctx.cursor ? ctx.cursor.nextSibling : parentElt.firstChild;
-
-    while (cursor) {
-
-        if (isMatched(cursor, meta)) {
-            return cursor;
-        }
-        cursor = cursor.nextSibling;
-    }
-    return null;
-}
-
-export function findDOMElement(meta, ctx) {
-
-
-    const parentElt = ctx.parentElt;
-
-    let cursor = selectDOMElement(meta, ctx);
-
-    if (!cursor) {
-        cursor = createDOMElement(meta, ctx);
-    } else {
-
-        applyDOMAttributes(cursor, meta.props);
-
-        let trash = ctx.cursor ? ctx.cursor.nextSibling : parentElt.firstChild;
-        while (trash && cursor !== trash) {
-            let t = trash;
-            trash = trash.nextSibling;
-            parentElt.removeChild(t);
-        }
-    }
-
-    return ctx.cursor = cursor;
-}
-
-export function clearTrailing(ctx) {
-    let cursor = ctx.cursor ? ctx.cursor.nextSibling : ctx.parentElt.firstChild;
-    while (cursor) {
-        let t = cursor;
-        cursor = cursor.nextSibling;
-        ctx.parentElt.removeChild(t);
-    }
-}
-
-export function createDOMElement(meta, ctx) {
-
-    let e = null;
-    if (meta.type == '#text') {
-
-        e = document.createTextNode(meta.props.text);
+        e.$listeners.push([k, value]);
+        addEventListener(e, k, value);
 
     } else {
 
-        let namespace = (meta.type === 'svg') ? DOMNamespaces.svg : ctx.parentElt._namespaceURI;
+        if (flagAttrs[k]) {
 
-        if (namespace === DOMNamespaces.svg) {
+            e[k] = value?true:null;
 
-            e = document.createElementNS(namespace, meta.type);
+        } else if (instantAttrs[k]) {
 
-            e._namespaceURI = namespace;
+            if (e[k] !== value){
+                e[k] = value;
+            }
 
         } else {
 
-            e = document.createElement(meta.type);
-
+            if (e.getAttribute(k) != value) {
+                e.setAttribute(k, value);
+            }
         }
-
-        const props = meta.props;
-        if (props) {
-
-            e.$listeners = [];
-
-            Object.keys(props).map(k => setDOMAttribute(e, k, props[k]));
-        }
-
-
     }
-
-    const before = (ctx.cursor ? ctx.cursor.nextSibling : ctx.parentElt.firstChild) || null;
-
-    ctx.parentElt.insertBefore(e, before);
-
-    return e;
 }
