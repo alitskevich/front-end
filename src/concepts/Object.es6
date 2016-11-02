@@ -2,7 +2,8 @@
 
 public:
 
-  <new>(proto: Object)
+  <new>(constructor: Function, proto: Object, initials: tuple[name, value])
+  has(key: string):bool
   get(key: string):any
   set(key: string, value: any): Object
   keys(): string[]
@@ -14,10 +15,20 @@ members:
   values: Array
   
 implementation:
-  
-  index (key) 
-    
-    return @keys.indexOf(key)
+	
+  <new>(@, constructor, proto, initials)
+ 		
+	@ := ALLOC()
+	@constructor = constructor ? Object
+	@proto = proto ? constructor.prototype
+
+	if constructor is Object
+		initials.each( e -> @set(e.name, e.value)
+	else
+		
+		constructor(@, constructor, proto)
+		
+	return @ 
 
   has (key) 
     
@@ -25,17 +36,15 @@ implementation:
 
   get (key) 
 
-    return @has(key) ? @values(index(key) : proto?.get(key)
-  
+    return @has(key) ? @values(@keys.indexOf(key) : proto?.get(key)
   
   set (key, value) 
   
     if @has(key)
       
-      values.replace(index(key), value)
+      values.replace(@keys.indexOf(key), value)
     
     else
     
       keys.add(key)
       values.add(value)
-}
