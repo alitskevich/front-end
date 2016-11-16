@@ -2,10 +2,30 @@ import {functionName, capitalize, getter, getStatic} from './utils.es6';
 
 let COUNTER = 0;
 
+export class Property {
+    
+    isEquals(){
+        
+        return a===b;
+    }
+    
+    getter(state, key) {
+        
+        return getter(state, key)
+    }
+    
+    setter(state, key, value) {
+        
+        state.put(key, value);
+    }
+}
+
+const PROPERTY_STUB = new Property();
+
 /**
  * The base component ancestor.
  */
-export default class Component {
+export class Component {
 
     static PROPS = {
     
@@ -22,14 +42,6 @@ export default class Component {
         this.onConstructed(opts);
     }
 
- 
-    ////////////////////////
-    //// Lifecycle hooks
-    ///////////////////////
-   
-    /**
-     * Used by platform adapter to extend constructor logic
-     */
     onConstructed() {
     
     }
@@ -45,63 +57,77 @@ export default class Component {
         this._state = null;
     }
 
-    onUpdate(props, callback) {
-
-        this.update(props, callback);
+    onInput(payload) {
+        
+        const diff = this.update(payload);
+        
+        if (diff) {
+            
+            this.applyChanges(diff);
+            
+        };
     }
-    
-    ////////////////////////
-    //// State
-    ///////////////////////
+
+    onError(error) {
+  
+    }
+
+    applyChanges(diff) {
+        
+        this.render();
+    }
+
+    render() {
+        
+    }
 
     get(key) {
-        const PROP = this.constructor.PROPS[key];
+        
+        const property = this.constructor.PROPS.get(key) || PROPERTY_STUB;
 
-        return PROP ? PROP.getter.call(this, this._state, key) : undefined;
+        return property.getter(this._state, key);
     }
 
-    update(delta) {
+    update(payload) {
 
-        if (delta) {
+        if (payload) {
+            
+            const diff = [];
+            
+            for (let property of this.constructor.PROPS.values()) {
+              
+                const key = prop.id;
+                const value  = payload[key];
+                const oldValue = this._state[key];
+                if (!property.isEquals(value, )) {
+                  diff.push({key, value, oldValue, property, hookId: key + 'Changed'});
+                  property.setter(this._state, key, value, oldValue);
+                }
+            }
+            if (diff.length) {
+                
+                diff.forEach(e => {
+                    const hook = this.get(e.hookId) || this[e.hookId];
+                    if (hook) {
+                        
+                        try {
 
-            const prevState = this._state;
-            const keys = Object.keys(delta);
+                            hook.call(this, e.value, e);
 
-            for (let key in delta) {
-              const PROP = this.constructor.PROPS[key];
-              if (PROP && this.getOwnProperty(key) && PROP.isEquals(delta[key], this._state[key]))
- 
-                this.hook(`${key}Changed`, delta[key]);
-              }
+                        } catch(ex){
 
-                    cb && cb();
-                });
+                            this.onError({ ...ex, message: `Error in ${key} hook: ${ex.message}` });
+                        }
+                    }
 
-            } else {
-                cb && cb();
+                }); 
+                return true;
+                
             }
 
         }
+        return false
     }
-
-    hook(key, ...args) {
-
-        const cb = this.get(key) || this[key + 'Changed'];
-
-        try{
-
-            return cb && cb.apply(this, args) || null;
-
-        } catch(ex){
-
-            this.logError(`Error in ${key} hook`, ex);
-        }
-
-    }
-
-    ///////////////////////
-    //// Routines
-    ///////////////////////
 
     /**
      * Gets string representation of component.
