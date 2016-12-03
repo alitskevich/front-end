@@ -1,1 +1,0 @@
-export const isObject = (o)=> (o && typeof o ==='object');

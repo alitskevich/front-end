@@ -1,3 +1,5 @@
+export const isObject = (o)=> (o && typeof o ==='object');
+
 export function getter(k) {
 
     var i,l,r = this[k];
@@ -5,10 +7,6 @@ export function getter(k) {
     return r;
 }
 
-export function functionName(fn) {
-
-    return fn.displayName || (fn.displayName = fn.name || ((/^function\s+([\w\$]+)\s*\(/.exec(fn.toString()) || [])[1] || 'C'));
-}
 
 export function getStatic(t, key) {
 
