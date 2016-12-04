@@ -42,10 +42,10 @@ class AlgorithmResult {
     /**
      * Getter for ["result"]{@link AlgorithmResult#result}.
      *
-     * @returns {*} result
+     * @returns {*} Result.
      * */
     get result() {
-        return this.data;
+        return this.result;
     }
 
     /**
@@ -54,14 +54,14 @@ class AlgorithmResult {
      * @param {*} value
      * */
     set result(value) {
-        this.data = value;
+        this.result = value;
     }
 
     /**
      * Getter for ["elapsedTime"]{@link AlgorithmResult#elapsedTime}.
      * Stops timer if it hasn't stopped yet.
      *
-     * @returns {number} result
+     * @returns {number} Elapsed time.
      * */
     get elapsedTime () {
         if (!this.startTime && !this.endTime) {
