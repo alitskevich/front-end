@@ -13,7 +13,7 @@ const result = factory
         type: TYPE_ALGORITHM_SORT,
         name: 'quick-sort',
     })
-    .exec()
+    .exec([2, 8, 7, 16, 5, 11])
     .save();
 
 
