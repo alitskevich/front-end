@@ -24,7 +24,8 @@ class QuickSort extends Algorithm {
 
         result.startTimer();
 
-        result.result = this.qsort(arr, 0, arr.length - 1);
+        this.qsort(arr, 0, arr.length - 1);
+        result.result = arr;
 
         result.stopTimer();
 
@@ -46,7 +47,7 @@ class QuickSort extends Algorithm {
          * Algorithm effectiveness may depend on this step in very specific
          * cases.
          * */
-        const pivot = arr[(right - left) / 2];
+        const pivot = arr[Math.floor((left + right) / 2)];
 
         let _left = left;
         let _right = right;
@@ -75,10 +76,10 @@ class QuickSort extends Algorithm {
                  * Then increment left and right indices.
                  * */
                 this.swap(arr, _left, _right);
-
-                _left++;
-                _right--;
             }
+
+            _left++;
+            _right--;
         }
 
 
