@@ -6,7 +6,7 @@ const {algorithm} = require('../decorators');
 const {TYPE_ALGORITHM_SORT} = require('../constants');
 
 
-class FastSort extends Algorithm {
+class QuickSort extends Algorithm {
 
     /**
      * Execute algorithm
@@ -31,4 +31,4 @@ class FastSort extends Algorithm {
 }
 
 
-module.exports = algorithm(TYPE_ALGORITHM_SORT, 'fast-sort')(FastSort);
+module.exports = algorithm(TYPE_ALGORITHM_SORT, 'quick-sort')(QuickSort);

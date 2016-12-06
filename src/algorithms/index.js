@@ -11,7 +11,7 @@ const factory = new AlgorithmFactory();
 const result = factory
     .create({
         type: TYPE_ALGORITHM_SORT,
-        name: 'fast-sort',
+        name: 'quick-sort',
     })
     .exec()
     .save();

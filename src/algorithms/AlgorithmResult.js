@@ -13,7 +13,7 @@ class AlgorithmResult {
             throw new Error('Bad arguments.');
         }
 
-        this.result = null;
+        this._result = null;
 
         this.algorithm = algorithm;
 
@@ -45,7 +45,7 @@ class AlgorithmResult {
      * @returns {*} Result.
      * */
     get result() {
-        return this.result;
+        return this._result;
     }
 
     /**
@@ -54,7 +54,7 @@ class AlgorithmResult {
      * @param {*} value
      * */
     set result(value) {
-        this.result = value;
+        this._result = value;
     }
 
     /**

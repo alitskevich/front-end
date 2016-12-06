@@ -1,6 +1,6 @@
-const FastSort = require('./FastSort');
+const QuickSort = require('./QuickSort');
 
 
 module.exports = {
-    FastSort
+    QuickSort
 };
