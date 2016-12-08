@@ -60,7 +60,7 @@ class Hero extends Person {
         this.speed = speed;
     }
     
-    fly {
+    fly() {
         
     }
 }
@@ -71,7 +71,7 @@ function bigbang() {
      
     const inna = new Woman();
     
-    const danila = inna.born((16, 200, 345);
+    const danila = inna.born(16, 200, 345);
     
     danila.fly()
     danila.eat()

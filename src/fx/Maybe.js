@@ -1,111 +1,78 @@
-
-    /* Maybe Monad */
-
-    var Just
-    var Some = Just = Maybe.Just = Maybe.Some = root.Some = root.Just = function (val) {
-        return new Maybe.fn.init(true, val)
-    }
-
-    var Nothing
-    var None = Nothing = Maybe.Nothing = Maybe.None = root.None = function () {
-        return new Maybe.fn.init(false, null)
-    }
+import Monad from './Monad.js';
+import { fnThis, fnId, fnUnbind, fnThrow, assert } from 'utils/fn.js';
     
-  class Maybe extends Monad {
-  
-    static fromNull(val) {
-        return val == null ? Maybe.None() : Maybe.Some(val)
-    }
+export const Nothing = Object.assign( Monad.of(null), {
 
-    static Maybe.of(a) {
-        return Some(a)
+    bind: fnThis,
+    some: ()  => fnThrow('Illegal state exception'),
+    orSome: fnId,
+    orElse: fnId,
+    ap: fnThis,
+    equals: fnUnbind((T, other) => other === T),
+    toList: fnUnbind(T => T.map(List).orSome(Nil)),
+    toEither: Left.of,
+    toValidation: Fail.of,
+    fold: defaultValue => f => defaultValue,
+    cata: (none, some) => none(),
+    filter: fnUnbind((T, fn) => T.flatMap(a => T)),
+    toString: ()  => 'Nothing'
+});
+
+
+/*  Monad */
+export class Just extends Monad {
+
+    static of = a => new Just(a);
+
+    constructor (val) {
+        super(val);
+        
+        assert(val == null, 'Illegal state exception');
     }
+}
+
+Object.assign( Just.prototype, {
     
-    static toList(maybe) {
-        return maybe.toList()
-    }
-
-    init: function (isValue, val) {
-        this.isValue = isValue
-        if (val == null && isValue) {
-            throw 'Illegal state exception'
-        }
-        this.val = val
-    },
-    isSome: function () {
-        return this.isValue
-    },
-    isNone: function () {
-        return !this.isSome()
-    },
     bind: function (bindFn) {
-        return this.isValue ? bindFn(this.val) : this
+        return bindFn(this.val)
     },
     some: function () {
-        if (this.isValue) {
-            return this.val
-        } else {
-            throw 'Illegal state exception'
-        }
+        return this.val
     },
     orSome: function (otherValue) {
-        return this.isValue ? this.val : otherValue
+        return this.val
     },
     orElse: function (maybe) {
-        return this.isValue ? this : maybe
+        return this 
     },
     ap: function (maybeWithFunction) {
         var value = this.val
-        return this.isValue ? maybeWithFunction.map(function (fn) {
+        return maybeWithFunction.map(function (fn) {
             return fn(value)
-        }) : this
+        })
     },
     equals: function (other) {
         if (!isFunction(other.isNone) || !isFunction(other.map)) {
             return false
         }
-        if (this.isNone()) {
-            return other.isNone()
-        }
         return this.ap(other.map(equals)).orElse(false)
     },
 
-    toList: function () {
-        return this.map(List).orSome(Nil)
-    },
-    toEither: function (failVal) {
-        return this.isSome() ? Right(this.val) : Left(failVal)
-    },
-    toValidation: function (failVal) {
-        return this.isSome() ? Success(this.val) : Fail(failVal)
-    },
-    fold: function (defaultValue) {
-        var self = this
-        return function (fn) {
-            return self.isSome() ? fn(self.val) : defaultValue
-        }
-    },
-    cata: function (none, some) {
-        return this.isSome() ? some(this.val) : none()
-    },
-    filter: function (fn) {
-        var self = this
-        return self.flatMap(function (a) {
-            return fn(a) ? self : None()
-        })
-    },
-    toString: function() {
-        return this.isSome() ? 'Just(' + this.val + ')' : 'Nothing'
-    },
-    inspect: function() {
-        return this.toString()
-    }
+    toList: fnUnbind(T => T.map(List).orSome(Nil)),
+    toEither: fnUnbind((T, failVal) => Right(T.get())),
+    toValidation: fnUnbind((T, failVal) => Success(T.get())),
+    fold: fnUnbind((T, defaultValue) => fn => fn(T.get())),
+    cata: fnUnbind((T, none, some) => some(T.get())),
+    filter: fnUnbind((T, fn) => T.flatMap(a => fn(a) ? T : Nothing))
+});
+    
+// Maybe
+export class Maybe extends Monad {
+
+    static of = Just.of;
+    
+    static fromNull = a => a == null ? Nothing : Maybe.of(a);
+
+    static toList = maybe => maybe.toList();
 }
 
-    // aliases
-    Maybe.prototype.orJust = Maybe.prototype.orSome
-    Maybe.prototype.just = Maybe.prototype.some
-    Maybe.prototype.isJust = Maybe.prototype.isSome
-    Maybe.prototype.isNothing = Maybe.prototype.isNone
-
-    Maybe.fn.init.prototype = Maybe.fn

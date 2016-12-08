@@ -28,9 +28,7 @@
             }
         },
         run() {
-            return this.go(function (f) {
-                return f()
-            })
+            return this.go(f => f())
         },
         bind(fn) {
 

@@ -1,32 +1,27 @@
+import Identity from './Identity.js';
+
 // Monad - a value wrapper with map, join,chain,ap
-class Monad {
+export class Monad  extends Identity {
 
     //Monad.of is simpler than "new Monad(val)
-    static of(value) {
-        return new Monad(value);
-    };
-    
-    constructor(value) {
-        this.value = value;
-    }
+    static of = a => new Monad(a);
     
     //Applies the function but returns another Monad!
     map(f) {
-        return Monad.of(f(this.value));
-    }
-    
-    // used to get the value out of the Monad
-    join() { 
-        return this.value;
+        
+        return Monad.of(f(this.get()));
     }
     
     //Helper func that maps and then gets the value out
     chain(f) {
-        return this.map(f).join();
+        
+        return this.map(f).get();
     }
     
     //Used to deal w/ multiple Monads
-    ap(someOtherMonad) {
-        return someOtherMonad.map(this.value);
+    ap(otherMonad) {
+        
+        return otherMonad.map(this.get());
     }
+
 }

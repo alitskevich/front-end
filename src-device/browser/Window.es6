@@ -5,8 +5,8 @@ class Window extends EventEmitter {
         this.document = new Document();
     }
 
-
     Out(content) {
+        
         document.getElementById('out').innerHTML = content
     }
 }

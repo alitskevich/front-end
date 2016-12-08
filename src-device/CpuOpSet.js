@@ -1,18 +1,32 @@
 
 
 const OPS = {
-    add: ({BX,CX}) => {AX: BX + CX}
+    add: (a, b = 1) => a + b,
+    sub: (a, b = 1) => a - b,
+    mul: (a, b) => a * b,
+    div: (a, b) => a / b,
+    
+    cmp: (a, b) => a === b,
+    not: (a) => !a,
+    and: (a, b) => a && b,
+    or: (a, b) => a || b,
+    xor: (a, b) => a & b,
+    
+    shl: (a, b) => a + b,
+    shr: (a, b) => a + b
+}
 
-        NONE: 0,
-        MOV_REG_TO_REG: 1,
-        MOV_ADDRESS_TO_REG: 2,
-        MOV_REGADDRESS_TO_REG: 3,
+const OP_SET = (M, R) => {
+        NONE: ()=>({R:{IP: 0}}),
+        MOV_REG_TO_REG:         ({IP})=>({R:{ [M[IP+1]]: R[M[IP+2]],     IP: IP+2}}),
+        MOV_ADDRESS_TO_REG:     ({IP})=>({R:{ [M[IP+1]]: M[M[IP+2]],     IP: IP+2}}),
+        MOV_REGADDRESS_TO_REG:  ({IP})=>({R:{ [M[IP+1]]: M[R[M[IP+2]]],  IP: IP+2}}),
         MOV_REG_TO_ADDRESS: 4,
         MOV_REG_TO_REGADDRESS: 5,
         MOV_NUMBER_TO_REG: 6,
         MOV_NUMBER_TO_ADDRESS: 7,
         MOV_NUMBER_TO_REGADDRESS: 8,
-        ADD_REG_TO_REG: 10,
+        ADD_REG_TO_REG:         ({IP})=>({R:{ [M[IP+1]]: add(R[M[IP+1]], R[M[IP+2]]),     IP: IP+2}}),
         ADD_REGADDRESS_TO_REG: 11,
         ADD_ADDRESS_TO_REG: 12,
         ADD_NUMBER_TO_REG: 13,
@@ -20,8 +34,8 @@ const OPS = {
         SUB_REGADDRESS_FROM_REG: 15,
         SUB_ADDRESS_FROM_REG: 16,
         SUB_NUMBER_FROM_REG: 17,
-        INC_REG: 18,
-        DEC_REG: 19,
+        INC_REG:                ({IP})=>({R:{ [M[IP+1]]: add(R[M[IP+1]]),     IP: IP+1}}),
+        DEC_REG:                ({IP})=>({R:{ [M[IP+1]]: sub(R[M[IP+1]]),     IP: IP+1}}),
         CMP_REG_WITH_REG: 20,
         CMP_REGADDRESS_WITH_REG: 21,
         CMP_ADDRESS_WITH_REG: 22,

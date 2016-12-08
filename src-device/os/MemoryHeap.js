@@ -3,7 +3,7 @@ const guid = ((c) => ()=>c++)(0);
     
 class MemoryFragment {
     
-    constructor (address, sizeInBlocks){
+    constructor (address, sizeInBlocks) {
         
         this.ref = guid();
         this.address = address;
@@ -12,14 +12,13 @@ class MemoryFragment {
     
 }
 
-export class Memory {
+export class MemoryHeap {
     
-    constructor(TOTAL_SIZE, BLOCK_SIZE = 1024){
+    constructor(memory, BLOCK_SIZE = 1024){
         
-        this.BLOCK_SIZE = 1024;
-        this.TOTAL_SIZE = TOTAL_SIZE;
+        this.BLOCK_SIZE = BLOCK_SIZE;
         
-        this.DATA = new Array(TOTAL_SIZE);
+        this.memory = memory;
        
         this.allocated = new Map();
         this.released = new Map();
@@ -73,52 +72,23 @@ export class Memory {
         
         return this.DATA.slice(fragment.address, fragment.size);
     }
+  
+    ensureSize(ref, size) {
+        
+        const fragment = this.allocated.get(ref);
+        if (fragment.size < size) {
+            
+        }
+        
+        return ref;
+    }
    
     write(ref, data) {
         
-        const fragment = this.allocated.get(ref);
+        const fragment = this.ensureSize(ref);
 
         for (var i = 0, length = fragment.size = data.length; i < length; i++) {
             this.DATA[fragment.address + i] = data[i];
-        }
-    }
-    
-    checkAddr(newIP) {
-        
-        if (newIP < 0 || newIP >= this.DATA.length) {
-            throw "IP outside memory";
-        }
-        return newIP;
-    }
-    
-    load(address) {
-        var self = this;
-
-        if (address < 0 || address >= self.data.length) {
-            throw "Memory access violation at " + address;
-        }
-
-        self.lastAccess = address;
-        return self.data[address];
-    }
-    
-    store(address, value) {
-        var self = this;
-
-        if (address < 0 || address >= self.data.length) {
-            throw "Memory access violation at " + address;
-        }
-
-        self.lastAccess = address;
-        self.data[address] = value;
-    }
-    
-    reset() {
-        var self = this;
-
-        self.lastAccess = -1;
-        for (var i = 0, l = self.data.length; i < l; i++) {
-            self.data[i] = 0;
         }
     }
     

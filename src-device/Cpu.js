@@ -31,12 +31,23 @@ class Processor {
         this.memory = memory;
     }
     
-    run () {
+    reset () {
+          
+        var self = this;
+        self.maxSP = 231;
+        self.minSP = 0;
+
+        self.gpr = [0, 0, 0, 0];
+        self.sp = self.maxSP;
+        self.ip = 0;
+        self.zero = false;
+        self.carry = false;
+        self.fault = false;
         
-        while (true) {
-            
-            const opcode = this.readNext();
-            
+        this.memory.reset(); 
+        
+        for (let opcode=-1; opcode; opcode = this.readNext()) {
+ 
             const op = this.opSet[opcode];
             
             this.populateArgs(op);
@@ -60,19 +71,7 @@ class Processor {
     }
     
     reset() {
-        
-        var self = this;
-        self.maxSP = 231;
-        self.minSP = 0;
 
-        self.gpr = [0, 0, 0, 0];
-        self.sp = self.maxSP;
-        self.ip = 0;
-        self.zero = false;
-        self.carry = false;
-        self.fault = false;
-        
-        this.memory.reset();
         
     }
 }

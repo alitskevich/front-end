@@ -25,7 +25,7 @@ const __main__ = scriptEngine.DefineFunction({
         return user.greeting();
     `
     ,
-    CompliledBody: function ($) {
+    CompiledBody: function ($) {
 
         $.AssignVariable('prefix', 'Hi');
 
