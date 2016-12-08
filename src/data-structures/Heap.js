@@ -14,6 +14,24 @@ class Heap {
     }
 
     /**
+     * Getter for ["length"]{@link Heap#length}.
+     *
+     * @returns {number} Heap length.
+     * */
+    get length() {
+        return this._heap.length;
+    }
+
+    /**
+     * Getter for ["empty"]{@link Heap#empty}.
+     *
+     * @returns {boolean} Is empty.
+     * */
+    get empty() {
+        return !this.length;
+    }
+
+    /**
      * Add new element to the heap tree. Add element to the tree bottom
      * and move it to the top to restore the tree <=> match requirement (parent > child#1 && parent > child#2)
      *
@@ -117,6 +135,16 @@ class Heap {
     }
 
 }
+
+
+/**
+ * Implement iterator behavior
+ * */
+Heap.prototype[Symbol.iterator] = function*() {
+    for (let item of this._heap) {
+        yield item;
+    }
+};
 
 
 module.exports = Heap;
