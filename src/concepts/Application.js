@@ -1,35 +1,31 @@
-import { assert, isFunction } from 'utils/fn.js';
+/* eslint new-cap: 0 */
+import { assert, isFunction } from '../utils/fn.js';
+import { apply as applyEventBus } from './EventBus.js';
 
-const MODULE_TYPES = {};
+/**
+ * A application is a singletone instance that
+ *  - consists from independent modules
+ *  - has life-cycle 'init' and 'done'
+ *  - enables unified event-driven interaction between modules
+ */
+const application = {
 
-const app = {
-    
-    registerModuleType(constr) {
-        
-        assert(isFunction(constr), 'Module type is not a function');
-        
-        MODULE_TYPES[constr.name] = constr;
-    },
-    
-    init(defaults) {
-        
-        Object.assign(app, defaults);
-        
-        assert(Array.isArray(app.modules), 'No modules config');
-        
-        const unregisteredTypes = app.modules.map(cfg => cfg.type).filter(type => !MODULE_TYPES[type]);
-         
-        assert(!unregisteredTypes.length, `Modules types are not registered: ${unregisteredTypes}`);
-       
-        const modules = app.modules.map(cfg => new MODULE_TYPES[cfg.type]({app, ...cfg}));
-        
-        app.done = () => Promise.all(modules.filter(m => isFunction(m.done)).map(m => m.done()));
-        
-        return Promise
-            .all(modules.filter(m => isFunction(m.init)).map(m => m.init()))
-            .then(() => app);
-    }
-    
+  init(modulesConfig) {
+
+    applyEventBus(application);
+
+    assert(Array.isArray(modulesConfig), 'Modules config has to be an array');
+
+    const modules = modulesConfig.map(cfg => new cfg.type({ application, ...cfg }));
+
+    application.done = () => Promise
+      .all(modules.filter(m => isFunction(m.done)).map(m => m.done()))
+      .then(() => application);
+
+    return Promise
+      .all(modules.filter(m => isFunction(m.init)).map(m => m.init()))
+      .then(() => application);
+  }
 };
 
-export default app;
+export default application;

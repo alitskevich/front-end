@@ -1,8 +1,18 @@
 // Generator
 
-function* naturals(){
-  var c = 0;
+function* gen() {
 
-  yield c+1;
-  
+  yield 0;
+
+  yield 1;
+
+  yield 2;
+}
+
+export function demo(max) {
+
+  const iterator = gen();
+
+  return [ ...iterator ].forEach((e)=> Object.log(e));
+
 }

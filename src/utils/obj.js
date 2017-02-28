@@ -1,31 +1,18 @@
+/* eslint no-cond-assign: "off" */
+/* eslint no-eq-null: "off" */
 
-export const isObject = (o)=> (o && typeof o ==='object');
+import { fnId } from './fn.js';
 
-export const undefOrNull = (o)  => o == null;
+export const isObject = (o)=> (o && typeof o === 'object');
 
-export function getter(k) {
-
-    var i,l,r = this[k];
-    if (r === i && (l=(k = k.split('.')).length) > 1) for (i=0,r = this; i < l && r; r = r[k[i++]]);
-    return r;
-}
-
-
-export function getStatic(t, key) {
-
-    for (var r;t &&!r;t = t.__proto__) {
-        r = t.constructor[key]
-    }
-    return r;
-}
+export const undefOrNull = (o) => o == null;
 
 export function objId(x) {
 
   return x ? x.id : null;
 }
 
-export function intoMethod(f) { return function (...args) { return f.apply(this, [this, ...args]) } };
-
+export function intoMethod(f) { return function (...args) { return f.apply(this, [this, ...args]); }; }
 
 /**
  * Maps by object keys.
@@ -34,16 +21,35 @@ export function intoMethod(f) { return function (...args) { return f.apply(this,
  * @param fn function to produce item
  * @returns {Array} of mapped items
  */
-export function each(x, fn = (key, value) => ({ key, value })) {
+export function objForEach(x, fn) {
 
-  if (x) {
-    Object.keys(x).forEach((key, index) => fn(key, x[ key ], index));
+  if (x && fn) {
+    Object.keys(x).forEach((key, index) => fn(x[ key ], key, index));
   }
 
   return x;
 }
 
-export function map(x, fn = (key, value) => ({ key, value })) {
+export function objMap(x, fn = (value, key) => ({ value, key })) {
+
+  const result = {};
+
+  if (!x) {
+    return result;
+  }
+
+  Object.keys(x).forEach(key => {
+    const value = fn(x[ key ], key);
+
+    if (value != null) {
+      result[key] = value;
+    }
+  });
+
+  return result;
+}
+
+export function objToArray(x, fn = (value, key) => ({ value, key })) {
 
   const result = [];
 
@@ -52,9 +58,9 @@ export function map(x, fn = (key, value) => ({ key, value })) {
   }
 
   Object.keys(x).forEach(key => {
-    const value = fn(key, x[ key ]);
+    const value = fn(x[ key ], key);
 
-    if (!undefOrNull(value)) {
+    if (value != null) {
       result.push(value);
     }
   });
@@ -65,7 +71,7 @@ export function map(x, fn = (key, value) => ({ key, value })) {
 /*
   [e,...] => { [fnKey(e)]: fnValue(e), ...}
 */
-export function objFromArray(arr, fnKey = noop, fnValue = noop) {
+export function objFromArray(arr, fnKey = fnId, fnValue = fnId) {
 
   const result = {};
 
@@ -84,10 +90,44 @@ export function objFromArray(arr, fnKey = noop, fnValue = noop) {
 }
 
 export function append(a, b) {
-  
-    if (isFunction(a.concat)) {
-        return a.concat(b)
+
+    if (a.concat) {
+        return a.concat(b);
     }
 
     return a + b;
 }
+
+export function objGet(x, key) {
+
+  return (x && key) ? getter.call(x, key) : Object.undefined;
+}
+
+export function getter(k) {
+
+    let r = this[k], arr, l;
+
+    if (r === arr && (l = (arr = k.split('.')).length) > 1) {
+
+      r = this[arr[0]];
+      for (let i = 1; i < l; r = r[arr[i++]]) {
+        if (!r) {
+          return Object.undefined;
+        }
+      }
+    }
+
+    return r;
+}
+
+// overrides methods with super.
+Object.mixin = (target, fn, ...params) =>{
+    const _super = {};
+    const mix = fn && fn.apply(null, [_super].concat(params)) || {};
+    Object.keys(mix).forEach((n) => {
+        const f = target[n];
+        _super[n] = (ctx, ...args)=>(f && f.apply(ctx, args));
+        target[n] = mix[n];
+    });
+    return target;
+};

@@ -1,33 +1,38 @@
+import { assert, isFunction } from '../utils/fn.js';
 
+let COUNTER = 0;
 
 /**
- * Observable - No event types, 1-to-N keep all observers by itself.
+ * Observable keeps all observers by itself 1-to-N.
  */
 export default class Observable {
 
-    constructor(){
+  constructor() {
 
-        this.observers = new Set();
-    }
+    Object.defineProperty(this, '_observers', { value: new Map() });
+  }
 
-    addObserver(o) {
- 
-        this.observers.add(o);
-    }
+  addObserver(o, key = COUNTER++) {
 
-    removeObserver(o) {
+    assert(isFunction(o), 'Observer is not a function');
 
-        this.observers.delete(o);
-    }
+    this._observers.set(key, o);
 
-    forEach(fn) {
-        
-        this.observers.forEach(fn);
-    }
-    
-    notify(event) {
-        
-        this.forEach(o=>o(event));
-    }
-    
+    return key;
+  }
+
+  observeOnce(o, key = COUNTER++) {
+
+    return this.addObserver(key, (event)=>(this.removeObserver(key) && o(event)));
+  }
+
+  removeObserver(key) {
+
+    this._observers.delete(key);
+  }
+
+  notify(event = {}) {
+
+    this._observers.forEach(o=>o(event));
+  }
 }

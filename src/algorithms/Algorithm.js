@@ -1,6 +1,5 @@
 const {SYMBOL_ALGORITHM_TYPE, SYMBOL_ALGORITHM_NAME} = require('./constants');
 
-
 class Algorithm {
 
     /**
