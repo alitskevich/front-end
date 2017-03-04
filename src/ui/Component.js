@@ -1,5 +1,4 @@
 import { fnId } from '../utils/fn.js';
-import { parseDataset } from '../utils/dom.js';
 import Template from './Template.js';
 import Property from '../concepts/Property.js';
 import Component from '../concepts/Component.js';
@@ -30,7 +29,7 @@ export default class UiComponent extends Component {
 
   // renders component using given renderer function.
   // By default, renderer function comes from `this.$renderParams.renderer`
-  render(renderer = this.$renderParams.renderer || fnId) {
+  render(renderer = this.$renderParams && this.$renderParams.renderer || fnId) {
 
     return renderer(this.resolveTemplate(), this);
   }
@@ -52,12 +51,37 @@ export default class UiComponent extends Component {
 
     const changed = super.update(delta);
 
+    if (changed.length) {
+
+      this.callChangedHooks(changed);
+    }
+
     return this.invalidate(changed);
   }
 
   // Useful routine implemented typical reaction on click event
-  updateOnClick({ currentTarget: { dataset } }) {
+  updateOnClick({ dataset }) {
 
-    this.update(parseDataset(dataset));
+    this.update(dataset);
   }
+
+  callChangedHooks(changed) {
+
+    changed.forEach(({ key, value, oldValue }) => {
+
+      const hook = this.get(`${key}Changed`);
+      if (hook) {
+
+        try {
+
+          hook.call(this, { value, oldValue, target: this, id: this.id });
+
+        } catch (ex) {
+
+          this.onError({ ...ex, message: `Error in ${key} hook: ${ex.message}` });
+        }
+      }
+    });
+  }
+
 }

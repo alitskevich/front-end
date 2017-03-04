@@ -56,25 +56,24 @@ export function escapeXml(unsafe) {
   });
 }
 
-const normalizeValue = function (_v) {
-  let v = _v;
-  if (v === null || v === Object.undefined) {
+export const parsePrimitive = function (v) {
+
+  if (v === 'null') {
+      return null;
+  } else if (v === 'undefined') {
+      return Object.undefined;
+  } else if (v === 'true') {
       return true;
-  }
-  if (!v) {
-      return '';
-  }
-  if (v[0] === '"') {
-      v = v.slice(1, -1);
-  }
-  if (v === 'true') {
-      return true;
-  }
-  if (v === 'false') {
+  } else if (v === 'false') {
       return false;
   }
 
-  return decodeXmlEntities(v);
+  const n = +v;
+  if (!isNaN(n)) {
+    return n;
+  }
+
+  return v;
 };
 
 export const Attributes = {
@@ -87,7 +86,8 @@ export const Attributes = {
     }
     let found = false;
     for (let e = RE_ATTRS.exec(s); e; e = RE_ATTRS.exec(s)) {
-        r[e[1]] = normalizeValue(e[2]);
+        const val = e[2] || '"true"';
+        r[e[1]] = parsePrimitive(decodeXmlEntities(val.slice(1, -1)));
         found = true;
     }
     return found ? r : null;

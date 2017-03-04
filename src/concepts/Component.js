@@ -18,9 +18,11 @@ export default class Component extends Entity {
 
   constructor(initialState, options) {
 
-    super(initialState);
+    super({});
 
     Object.assign(this, options);
+
+    Property.update(this, initialState);
 
     this.onCreate();
   }
@@ -62,6 +64,7 @@ export default class Component extends Entity {
 
     (this.$finalizers || (this.$finalizers = [])).push(fn);
   }
+
   ////////////////////////
   // State
   ///////////////////////
@@ -108,13 +111,9 @@ export default class Component extends Entity {
     if (info.length) {
 
       Property.update(this, payload);
-
-      this.callChangedHooks(info);
-
-      return info;
     }
 
-    return false;
+    return info;
   }
 
   ////////////////////////
@@ -126,24 +125,5 @@ export default class Component extends Entity {
     ( this.$ || (this.$ = {}) )[key] = value;
 
     return value;
-  }
-
-  callChangedHooks(info) {
-
-    info.forEach(({ key, value, oldValue }) => {
-
-      const hook = this.get(`${key}Changed`);
-      if (hook) {
-
-        try {
-
-          hook.call(this, value, oldValue);
-
-        } catch (ex) {
-
-          this.onError({ ...ex, message: `Error in ${key} hook: ${ex.message}` });
-        }
-      }
-    });
   }
 }

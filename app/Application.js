@@ -52,7 +52,7 @@ export default class Application extends Component {
     Store.incCounter(-1);
   }
 
-  onItemSelected(value) {
+  onItemSelected({ value }) {
 
     this.current = value;
   }

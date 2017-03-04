@@ -21,7 +21,7 @@ export default class Property {
 
   static install(ctor, _props = ctor['PROPS'] || {}) {
 
-    if (ctor.$PROPS) {
+    if (ctor.hasOwnProperty('$PROPS')) {
       return;
     }
 
@@ -35,15 +35,18 @@ export default class Property {
 
       ctor.$PROPS.set(key, prop);
 
-      const def = {
-          get: function () { return prop.get(this, key);}
-      };
-
-      if (!prop.isReadOnly) {
+      let def = null;
+      if (!prop.isWriteOnly && !(ctor.prototype.__lookupGetter__(key))) {
+        def = {};
+        def.get = function () { return prop.get(this, key);};
+      }
+      if (!prop.isReadOnly && !(ctor.prototype.__lookupSetter__(key))) {
+        def = def || {};
         def.set = function (value) { return this.set(key, value);};
       }
-
-      Object.defineProperty(ctor.prototype, key, def);
+      if (def) {
+        Object.defineProperty(ctor.prototype, key, def);
+      }
     });
   }
 
@@ -74,17 +77,23 @@ export default class Property {
     return diff;
   }
 
-  static update($, payload = {}) {
+  static update($, payload) {
 
-    props($).forEach((prop, key) => {
+    if (payload) {
 
-      if (!prop.isReadOnly) {
-        const value = payload[key];
-        if (typeof value !== 'undefined') {
-          prop.set($, key, value);
+      props($).forEach((prop, key) => {
+
+        if (!prop.isReadOnly) {
+
+          const value = payload[key];
+
+          if (typeof value !== 'undefined') {
+
+            prop.set($, key, value);
+          }
         }
-      }
-    });
+      });
+    }
 
     return $;
   }

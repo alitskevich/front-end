@@ -1,3 +1,6 @@
+/* eslint eqeqeq: "off" */
+import { parsePrimitive } from './xml.js';
+
 const w3 = 'http://www.w3.org/';
 export const DOMNamespaces = {
     html: w3 + '1999/xhtml',
@@ -18,7 +21,7 @@ const win = typeof window === 'undefined' ? {} : window;
 
 export function parseDataset(dataset) {
   return Object.keys(dataset).reduce(( r, key) => {
-    r[key] = JSON.parse(dataset[key]);
+    r[key] = parsePrimitive(dataset[key]);
     return r;
   }, {});
 }
@@ -60,8 +63,21 @@ export function setDOMAttribute(e, k, value) {
 
   if (typeof value === 'function') {
 
-     e.removeEventListener(k, e.$attributes[k]);
-     addEventListener(e, k, value);
+     e.removeEventListener(k, e.$attributes['$' + k]);
+
+     const fn = (ev) => value(Object.assign(ev, { dataset: parseDataset(ev.currentTarget.dataset) }));
+     e.$attributes['$' + k] = fn;
+     addEventListener(e, k, fn);
+
+  } else if (k === 'data') {
+
+    Object.assign(e.dataset, Object.keys(value).reduce(( r, key) => {
+      const v = value[key];
+      if (typeof v !== 'object') {
+        r[key] = v;
+      }
+      return r;
+    }, {}));
 
   } else if (flagAttrs[k]) {
 

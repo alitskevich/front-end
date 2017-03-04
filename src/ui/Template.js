@@ -25,7 +25,7 @@ function compileComponentType(elt) {
     if (colonPos !== -1) {
       const key = tag.slice(colonPos + 1);
       elt.resolveComponentType = $ => {
-        const type = $.get(key);
+        const type = capitalize($.get(key));
         return COMPONENTS_TYPES.get(type);
       };
     } else if (tag[0] === tag[0].toUpperCase()) {
@@ -227,7 +227,7 @@ export default class Template {
     const key = ctor.NAME || ctor.name;
     if (key[0] !== '$') {
 
-      COMPONENTS_TYPES.set(key, ctor);
+      COMPONENTS_TYPES.set(capitalize(key), ctor);
     }
   }
 

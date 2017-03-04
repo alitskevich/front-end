@@ -1,6 +1,21 @@
 import { objForEach } from '../../utils/obj.js';
 import { appendDOMElement, setDOMAttribute, createDomElement } from '../../utils/dom.js';
 
+export const doneFn = (c) => {
+  c.onDone();
+  return null;
+ };
+
+export const finalizerFn = function () {
+
+  objForEach(this.$sub, doneFn);
+
+  this.$sub = null;
+  this.$parent = null;
+  this.$children = null;
+  this.element = null;
+};
+
 function isMatched(e, { tag, $key }) {
 
   return e.nodeName.toLowerCase() === tag.toLowerCase() && $key === e.$key;

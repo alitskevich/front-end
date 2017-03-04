@@ -1,20 +1,5 @@
-import { resolveDOMElement, clearAfter } from './DOMRenderer.util.js';
+import { resolveDOMElement, clearAfter, finalizerFn, doneFn } from './DOMRenderer.util.js';
 import { objMap, objForEach } from '../../utils/obj.js';
-
-const done = (c) => {
-  c.onDone();
-  return null;
- };
-
-const finalizerFn = function () {
-
-  objForEach(this.$sub, done);
-
-  this.$sub = null;
-  this.$parent = null;
-  this.$children = null;
-  this.element = null;
-};
 
 export function renderer(meta, component) {
 
@@ -22,12 +7,13 @@ export function renderer(meta, component) {
 
   // for root element:
   if (!component.element) {
+
     component.addFinalizer(finalizerFn);
   }
 
   const element = component.element = _renderer(meta, component);
 
-  component.$sub = objMap(component.$sub, (c, key) => (c.$retained ? c : done(c)));
+  component.$sub = objMap(component.$sub, (c, key) => (c.$retained ? c : doneFn(c)));
 
   return element;
 
