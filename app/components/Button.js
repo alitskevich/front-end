@@ -4,7 +4,7 @@ export default class Button extends Component {
 
   static TEMPLATE =
     <button
-      class="button btn"
+      class="ui primary button btn"
       click=":click"
       title=":title">:caption</button>;
 

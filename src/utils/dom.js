@@ -14,7 +14,8 @@ export const flagAttrs = {
 };
 
 export const instantAttrs = {
-    value: 1
+    value: 1,
+    checked: 1
 };
 
 const win = typeof window === 'undefined' ? {} : window;

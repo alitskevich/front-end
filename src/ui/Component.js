@@ -9,7 +9,9 @@ import Component from '../concepts/Component.js';
 export default class UiComponent extends Component {
 
   static registerType = (...ctors) => ctors.forEach(ctor => {
+
     Template.install(ctor);
+
     Property.install(ctor);
   });
 
@@ -54,9 +56,9 @@ export default class UiComponent extends Component {
     if (changed.length) {
 
       this.callChangedHooks(changed);
+      this.invalidate(changed);
     }
 
-    return this.invalidate(changed);
   }
 
   // Useful routine implemented typical reaction on click event

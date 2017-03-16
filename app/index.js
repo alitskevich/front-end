@@ -10,7 +10,7 @@ import './index.scss';
 const render = bootstrap({
   renderer,
   markup:`<Application version=":version" name=":name"/>`,
-  state: { version: '1.1', name:'Demo' },
+  state: { version: '1.11243', name:'Demo' },
   componentTypes: [],
   parentElt: document.body
 });

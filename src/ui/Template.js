@@ -224,7 +224,7 @@ export default class Template {
 
     ctor.$TEMPLATE = new Template(root);
 
-    const key = ctor.NAME || ctor.name;
+    const key = ctor.hasOwnProperty('NAME') ? ctor.NAME : ctor.name;
     if (key[0] !== '$') {
 
       COMPONENTS_TYPES.set(capitalize(key), ctor);

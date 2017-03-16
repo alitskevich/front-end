@@ -22,8 +22,6 @@ export function $Function({
     Code,
     Name = NAME_ANONYMOUS,
     BoundToThis,
-    CatchCode,
-    FinallyCode,
     // to be parent for a new variable scope in Apply()
     LexicalScope = CurrentVariableScope(),
     // to be referred as prototype by each object that newly constructed with this function
@@ -36,8 +34,6 @@ export function $Function({
     Parameters,
     BoundToThis,
     Code,
-    CatchCode,
-    FinallyCode,
     LexicalScope,
     Prototype
   });

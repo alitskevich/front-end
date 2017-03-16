@@ -3,7 +3,7 @@ import assert from 'assert';
 
 describe('TreeItem.props', function () {
 
-    it('parent', ()=>{
+    it('parent', ()=> {
 
         var top = new Item({ text: '0' });
         var item1 = new Item({ text: '1' });
@@ -16,11 +16,9 @@ describe('TreeItem.props', function () {
         assert.equal(top.last, item2, 'last');
         assert.equal(item1.next, item2, 'next');
         assert.equal(item2.prev, item1, 'prev');
-
     });
 
-
-    it('next', ()=>{
+    it('next', ()=> {
 
         var top = new Item({ text: '0' });
         var item1 = new Item({ text: '1' });
@@ -33,10 +31,9 @@ describe('TreeItem.props', function () {
         assert.equal(top.last, item2, 'last');
         assert.equal(item1.next, item2, 'next');
         assert.equal(item2.prev, item1, 'prev');
-
     });
 
-    it('prev', ()=>{
+    it('prev', ()=> {
 
         var top = new Item({ text: '0' });
         var item1 = new Item({ text: '1' });
@@ -49,7 +46,6 @@ describe('TreeItem.props', function () {
         assert.equal(top.last, item2, 'last');
         assert.equal(item1.next, item2, 'next');
         assert.equal(item2.prev, item1, 'prev');
-
     });
 
 });

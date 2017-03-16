@@ -1,3 +1,4 @@
+/* eslint no-eq-null: "off" */
 import { objForEach } from '../../utils/obj.js';
 import { appendDOMElement, setDOMAttribute, createDomElement } from '../../utils/dom.js';
 
@@ -93,14 +94,15 @@ export function applyDOMAttributes(e, _attrs) {
 
     } else {
 
-      objForEach(lastAttrs, (value, key) => {
-        if (!(key in _attrs)) {
+      objForEach(lastAttrs, (_value, key) => {
+        const value = _attrs[key];
+        if (value == null) {
           e.removeAttribute(key);
         }
       });
 
       objForEach(_attrs, (value, key) => {
-        if (value !== lastAttrs[key]) {
+        if (value != null && value !== lastAttrs[key]) {
           setDOMAttribute(e, key, value);
         }
       });

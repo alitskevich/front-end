@@ -14,7 +14,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var config = {
   entry: {
     app: [
-      'webpack-dev-server/client?http://localhost:8081',
+      'webpack-dev-server/client?http://localhost:8082',
       'webpack/hot/only-dev-server',
       'index.js'
     ],
