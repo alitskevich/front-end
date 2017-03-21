@@ -202,10 +202,9 @@ export function compileTemplate(elt) {
  */
 export default class Template {
 
-  static resolve = ($) => {
+  static resolve = ($) => $.constructor.$TEMPLATE.resolve($);
 
-    return $.constructor.$TEMPLATE.resolve($, $.key);
-  };
+  static hasTransclusion = ($) => $.constructor.$HAS_TRANSCLUSION;
 
   static install = (ctor) => {
 
@@ -223,6 +222,7 @@ export default class Template {
     }
 
     ctor.$TEMPLATE = new Template(root);
+    ctor.$HAS_TRANSCLUSION = text.includes('<transclude');
 
     const key = ctor.hasOwnProperty('NAME') ? ctor.NAME : ctor.name;
     if (key[0] !== '$') {
@@ -240,6 +240,6 @@ export default class Template {
 
   resolve($) {
 
-    return resolveTemplate($, this.root);
+    return resolveTemplate($, this.root, $.constructor.name);
   }
 }

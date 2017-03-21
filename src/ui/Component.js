@@ -17,14 +17,8 @@ export default class UiComponent extends Component {
 
   static getRegisteredType = Template.getType;
 
-  // Lifetime hook - on state reset from renderer flow
-  onInput(payload) {
-
-    this.update(payload);
-  }
-
   // implements reaction on component invalidation
-  invalidate(changed) {
+  invalidate() {
 
     return this.render();
   }
@@ -42,23 +36,21 @@ export default class UiComponent extends Component {
     return Template.resolve(this);
   }
 
-  // @deprecated use update()
-  assign(delta) {
-
-    return this.update(delta);
-  }
-
   // Updates State with given delta
   update(delta) {
 
-    const changed = super.update(delta);
+    const changes = super.update(delta);
 
-    if (changed.length) {
+    if (!changes.isEmpty || Template.hasTransclusion(this)) {
 
-      this.callChangedHooks(changed);
-      this.invalidate(changed);
+      this.invalidate();
     }
+  }
 
+  // decided if component should Invalidate On Update
+  shouldInvalidateOnUpdate(changes) {
+
+    return;
   }
 
   // Useful routine implemented typical reaction on click event
@@ -66,24 +58,4 @@ export default class UiComponent extends Component {
 
     this.update(dataset);
   }
-
-  callChangedHooks(changed) {
-
-    changed.forEach(({ key, value, oldValue }) => {
-
-      const hook = this.get(`${key}Changed`);
-      if (hook) {
-
-        try {
-
-          hook.call(this, { value, oldValue, target: this, id: this.id });
-
-        } catch (ex) {
-
-          this.onError({ ...ex, message: `Error in ${key} hook: ${ex.message}` });
-        }
-      }
-    });
-  }
-
 }

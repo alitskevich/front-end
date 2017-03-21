@@ -1,6 +1,6 @@
 /* eslint no-eq-null: "off" */
-import { objForEach } from '../../utils/obj.js';
-import { appendDOMElement, setDOMAttribute, createDomElement } from '../../utils/dom.js';
+import { objMap, objForEach } from '../../utils/obj.js';
+import { appendDOMElement, setDOMAttribute, createDomElement, instantAttrs } from '../../utils/dom.js';
 
 export const doneFn = (c) => {
   c.onDone();
@@ -17,6 +17,33 @@ export const finalizerFn = function () {
   this.element = null;
 };
 
+export function wrapRenderer(renderer) {
+
+  return (meta, component) => {
+
+    // avoid recurrsive rendering
+    if (component.$isRendering) {
+      // debounce sequental rendering
+      if (!component.$pendingRendering) {
+        component.$pendingRendering = true;
+        setTimeout(()=>{
+          component.$pendingRendering = false;
+          renderer(meta, component);
+        }, 1);
+      }
+      return;
+    }
+
+    component.$isRendering = true;
+
+    const element = renderer(meta, component);
+
+    component.$isRendering = false;
+
+    return element;
+  };
+
+}
 function isMatched(e, { tag, $key }) {
 
   return e.nodeName.toLowerCase() === tag.toLowerCase() && $key === e.$key;
@@ -88,7 +115,7 @@ export function applyDOMAttributes(e, _attrs) {
 
     if (e.nodeName === '#text') {
 
-      if (lastAttrs.text !== _attrs.text) {
+      if (e.textContent !== _attrs.text) {
         e.textContent = _attrs.text;
       }
 
@@ -102,7 +129,8 @@ export function applyDOMAttributes(e, _attrs) {
       });
 
       objForEach(_attrs, (value, key) => {
-        if (value != null && value !== lastAttrs[key]) {
+        const lastValue = instantAttrs[key] ? e[key] : lastAttrs[key];
+        if (value != null && value !== lastValue) {
           setDOMAttribute(e, key, value);
         }
       });

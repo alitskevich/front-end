@@ -74,6 +74,8 @@ export default class Property {
       });
     }
 
+    diff.isEmpty = !diff.info.length;
+
     return diff;
   }
 

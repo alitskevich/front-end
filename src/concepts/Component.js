@@ -111,6 +111,8 @@ export default class Component extends Entity {
     if (info.length) {
 
       Property.update(this, payload);
+
+      this.callChangedHooks(info);
     }
 
     return info;
@@ -119,6 +121,25 @@ export default class Component extends Entity {
   ////////////////////////
   // Routines
   ///////////////////////
+
+  callChangedHooks(changed) {
+
+    changed.forEach(({ key, value, oldValue }) => {
+
+      const hook = this.get(`${key}Changed`);
+      if (hook) {
+
+        try {
+
+          hook.call(this, { value, oldValue, target: this, id: this.id });
+
+        } catch (ex) {
+
+          this.onError({ ...ex, message: `Error in ${key} hook: ${ex.message}` });
+        }
+      }
+    });
+  }
 
   memoize(key, value) {
 

@@ -6,16 +6,6 @@ export { renderer as DomRenderer } from './dom/DOMRenderer.js';
 
 export const Component = UiComponent;
 
-function createDefaultRootType(markup, state) {
-
-  return class $Root extends Component {
-
-    static TEMPLATE = markup;
-
-    static PROPS = objMap(state, (val, key) => ({}));
-  };
-}
-
 /**
  * Bootstraps framework with config object which contains following params:
  * @param renderer - function to be used to renderer components
@@ -31,7 +21,12 @@ export function bootstrap(config) {
 
   const { markup, state = {}, Root, componentTypes = [] } = config;
 
-  const $Root = Root || createDefaultRootType(markup, state);
+  const $Root = Root || class $R extends Component {
+
+    static TEMPLATE = markup;
+
+    static PROPS = objMap(state, (val, key) => ({}));
+  };
 
   Component.registerType($Root, ...componentTypes);
 
@@ -41,5 +36,5 @@ export function bootstrap(config) {
 
   root.onInit();
 
-  return () => root.invalidate();
+  return () => root.render();
 }

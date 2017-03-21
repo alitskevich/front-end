@@ -1,23 +1,34 @@
-import { resolveDOMElement, clearAfter, finalizerFn, doneFn } from './DOMRenderer.util.js';
+import { resolveDOMElement, clearAfter, finalizerFn, doneFn, wrapRenderer } from './DOMRenderer.util.js';
 import { objMap, objForEach } from '../../utils/obj.js';
 
-export function renderer(meta, component) {
+export const renderer = wrapRenderer((meta, component) => {
 
   objForEach(component.$sub, c => (c.$retained = false));
 
   // for root element:
   if (!component.element) {
-
     component.addFinalizer(finalizerFn);
   }
 
   const element = component.element = _renderer(meta, component);
 
-  component.$sub = objMap(component.$sub, (c, key) => (c.$retained ? c : doneFn(c)));
+  component.$sub = objMap(component.$sub, (c, key) => {
+
+    if (!c.$retained) {
+      doneFn(c);
+      return;
+    }
+
+    if (!c.$inited) {
+      c.$inited = true;
+    }
+    return c;
+
+  });
 
   return element;
 
-}
+});
 
 export function _renderer(meta, parent, params = parent.$renderParams || {}) {
 
@@ -42,18 +53,16 @@ export function _renderer(meta, parent, params = parent.$renderParams || {}) {
 
     if (existing) {
 
-      c.onInput(attributes);
-
-      element = c.element;
+      c.update(attributes);
 
     } else {
 
-      element = c.element = _renderer(c.resolveTemplate(), c, params);
-
+      c.element = _renderer(c.resolveTemplate(), c, params);
       c.onInit();
-
       c.addFinalizer(finalizerFn);
     }
+
+    element = c.element;
 
   } else {
 
@@ -62,11 +71,12 @@ export function _renderer(meta, parent, params = parent.$renderParams || {}) {
     if (children) {
 
       const lastChildElt = children.reduce((prevElt, meta2) =>
-          _renderer(meta2, parent, { parentElt: element, prevElt, renderer }),
-          null);
+      _renderer(meta2, parent, { parentElt: element, prevElt, renderer }),
+      null);
 
       clearAfter(element, lastChildElt);
     }
+
   }
 
   return element;
