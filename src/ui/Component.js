@@ -45,6 +45,7 @@ export default class UiComponent extends Component {
 
       this.invalidate();
     }
+    return changes;
   }
 
   // decided if component should Invalidate On Update

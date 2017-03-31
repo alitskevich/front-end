@@ -48,6 +48,7 @@ export function _renderer(meta, parent, params = parent.$renderParams || {}) {
 
     c.$renderParams = params;
     c.$children = children;
+    c.$key = $key;
     c.$parent = parent;
     c.$retained = true;
 
@@ -66,7 +67,7 @@ export function _renderer(meta, parent, params = parent.$renderParams || {}) {
 
   } else {
 
-    element = resolveDOMElement(meta, params);
+    element = resolveDOMElement(meta, params, `${parent.$key || ''}:${meta.$key}` );
 
     if (children) {
 

@@ -1,3 +1,4 @@
+/* eslint no-eq-null: "off" */
 import { fnId, someOrNull, assert } from '../utils/fn.js';
 import { xmlParse, XmlNode } from '../utils/xml.js';
 import { objMap } from '../utils/obj.js';
@@ -56,7 +57,8 @@ function compileAttr(_p) {
       return $=>$.get(p);
     }
 
-    return $ => p.replace(RE_PLACEHOLDER, (s, key)=>($.get(key)));
+    return $ => p.replace(RE_PLACEHOLDER,
+      (s, key)=>{const v = $.get(key); return v == null ? '' : v;});
   }
 
   return ()=>p;
@@ -104,7 +106,7 @@ function resolveTemplate($, elt, keyPrefix = '') {
   if (eachItemId) {
 
     const data = $.get(eachDataId);
-    return !data ? null : [].concat(...data.map((d, index) => {
+    return !data ? null : [].concat(...data.filter(fnId).map((d, index) => {
 
       $.memoize(eachItemId, d);
 

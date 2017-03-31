@@ -1,8 +1,9 @@
 /* eslint no-eq-null: "off" */
-import { objMap, objForEach } from '../../utils/obj.js';
+import { objForEach } from '../../utils/obj.js';
 import { appendDOMElement, setDOMAttribute, createDomElement, instantAttrs } from '../../utils/dom.js';
 
 export const doneFn = (c) => {
+  c.$isDone = true;
   c.onDone();
   return null;
  };
@@ -21,15 +22,20 @@ export function wrapRenderer(renderer) {
 
   return (meta, component) => {
 
+    // avoid rendering after done
+    if (component.$isDone) {
+      return;
+    }
     // avoid recurrsive rendering
     if (component.$isRendering) {
       // debounce sequental rendering
+
       if (!component.$pendingRendering) {
         component.$pendingRendering = true;
         setTimeout(()=>{
           component.$pendingRendering = false;
-          renderer(meta, component);
-        }, 1);
+          component.invalidate();
+        }, 10);
       }
       return;
     }
@@ -44,20 +50,20 @@ export function wrapRenderer(renderer) {
   };
 
 }
-function isMatched(e, { tag, $key }) {
 
-  return e.nodeName.toLowerCase() === tag.toLowerCase() && $key === e.$key;
-}
-
-export function resolveDOMElement(meta, { parentElt, prevElt }) {
+export function resolveDOMElement(meta, { parentElt, prevElt }, $key) {
 
   const placeholder = (prevElt ? prevElt.nextSibling : parentElt.firstChild) || null;
 
-  let c = placeholder && isMatched(placeholder, meta) ? placeholder : null;
+  let c = placeholder &&
+    placeholder.nodeName.toLowerCase() === meta.tag.toLowerCase() &&
+    placeholder.$key === $key ? placeholder : null;
 
   if (!c) {
 
-    c = createDOMElement(meta, parentElt._namespaceURI);
+    c = createElement(meta, parentElt._namespaceURI);
+
+    c.$key = $key;
 
     appendDOMElement(c, parentElt, placeholder);
 
@@ -74,7 +80,7 @@ export function resolveDOMElement(meta, { parentElt, prevElt }) {
   return c;
 }
 
-export function createDOMElement(meta, _namespace) {
+export function createElement(meta, _namespace) {
 
   let e = null;
   if (meta.tag === '#text') {
@@ -91,8 +97,6 @@ export function createDOMElement(meta, _namespace) {
     applyDOMAttributes(e, meta.attributes);
 
   }
-
-  e.$key = meta.$key;
 
   return e;
 }
@@ -115,8 +119,10 @@ export function applyDOMAttributes(e, _attrs) {
 
     if (e.nodeName === '#text') {
 
-      if (e.textContent !== _attrs.text) {
-        e.textContent = _attrs.text;
+      const text = _attrs.text;
+
+      if (e.textContent !== text) {
+        e.textContent = text == null ? '' : text;
       }
 
     } else {
