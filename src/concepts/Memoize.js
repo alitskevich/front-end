@@ -4,7 +4,7 @@ export default class Memoize {
 
     const m = new Memoize(factory, keyFn, all);
 
-    return (x)=>m.get(x);
+    return m;
   }
 
   constructor(factory, keyFn = x=>x, value = new Map()) {

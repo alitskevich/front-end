@@ -2,3 +2,9 @@ li span input:checked ~ span {
   color: white;
   background-color: blue;
 }
+
+.stack {
+  height:100%;
+  display: flex;
+  flex-direction: column;
+}

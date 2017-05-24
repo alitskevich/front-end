@@ -46,8 +46,7 @@ export default {
     // returns camelized `s`
     camelize: (s, sep = '_') => (s && s.length && s.split(sep).map((t, i) =>(i ? capitalize(t) : t)).join('') || ``),
     // Returns string formatted by `s`-template filled with rest of arguments.
-    format: (s, ...args) => (s && s.length && s.replace(/\{(\d+)\}/g, (s, d) => (args[+d] || '')) || ''),
+    format: (s, ...args) => (s && s.length && s.replace(/\{(\d+)\}/g, (_, d) => (args[+d] || '')) || ''),
     snakeCase:(x) => (x || '').replace(/([a-z])([A-Z])/g, '$1_$2'),
-    macroCase: (x) => snakeCase(x).toUpperCase(),
     mirror
 };

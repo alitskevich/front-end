@@ -136,7 +136,6 @@ class Heap {
 
 }
 
-
 /**
  * Implement iterator behavior
  * */
@@ -145,6 +144,5 @@ Heap.prototype[Symbol.iterator] = function*() {
         yield item;
     }
 };
-
 
 module.exports = Heap;

@@ -10,7 +10,9 @@ const createRegistry = ()=> Memoize.create(id => new Observable());
  */
 export const apply = ($, registry = createRegistry()) => Object.assign($, {
 
-  subscribe( eventType, handler, handlerId = handler.id ) {
+  subscribe( eventType, handler0, handlerId = handler0.id ) {
+
+    const handler = (typeof handler0 === 'function' ) ? { handleEvent: handler0 } : handler0;
 
     assert(isFunction(handler.handleEvent),
       'handler.handleEvent is not a function');
@@ -35,6 +37,8 @@ export const apply = ($, registry = createRegistry()) => Object.assign($, {
 });
 
 export default class EventBus {
+
+  static applyTo = apply;
 
   constructor() {
 

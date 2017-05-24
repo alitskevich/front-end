@@ -3,7 +3,7 @@ import { xmlParse } from 'utils/xml.js';
 
 export default class Tree extends Component {
 
-  static TEMPLATE =
+  static TEMPLATE =`
     <div class="ui list tree">
         <div each="item of :data" click=":updateOnClick" class="item {{itemClass}}" data-value=":item.id">
           <i class="icon folder"></i>
@@ -14,7 +14,7 @@ export default class Tree extends Component {
           </div>
         </div>
         <small class="empty" if=":isEmpty"><transclude/></small>
-    </div>;
+    </div>`;
 
   static PROPS = {
     value: { default: null },

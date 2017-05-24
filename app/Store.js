@@ -25,10 +25,11 @@ class Store extends Observable {
 
     const c = Math.max(0, this.counter + inc * 11);
     const gen = () => c < 1 ? [] : Array.apply(null, Array(c)).map((e, i)=>
-      ({ id:i, name:'' + ( i + 1) }));
-    const result = gen();
+      ({ id:i, name:'n' + ( i + 1) }));
+    const result = gen()
+        .map((e, i)=>({ name: e.name, value: e.id, key: 100 + i, key2: 2100 + i, key3: 3100 + i }));
 
-    result.forEach(e => (e.children = gen()));
+    // result.forEach(e => (e.children = gen()));
 
     this.update({ list:result });
   }

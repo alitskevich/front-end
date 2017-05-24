@@ -1,0 +1,41 @@
+.super-table {
+  display: flex;
+  flex-direction: column;
+  .row {
+    position: relative;
+    height: 20px;
+    .cols {
+      position: absolute;
+      display: flex;
+      .col {
+        width: 60px;
+        background-color: white;
+        &:first-child{
+        }
+      }
+    }
+  }
+
+  .header {
+    flex: 1 1 30px;
+    height:30px;
+    .col{
+      background-color: gray;
+    }
+  }
+
+  .container {
+    flex: 1 1 100%;
+    width:100%;
+    overflow-y: auto;
+    .content {
+        background-color: white;
+      .grid {
+        position: relative;
+        top:0;
+        width:100%;
+        background-color: white;
+      }
+    }
+  }
+}

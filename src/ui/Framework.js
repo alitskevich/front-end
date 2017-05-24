@@ -1,6 +1,7 @@
 import UiComponent from './Component.js';
 import { objMap } from '../utils/obj.js';
 
+export { default as EventBus } from '../concepts/EventBus.js';
 export { renderer as StringRenderer } from './string/StringRenderer.js';
 export { renderer as DomRenderer } from './dom/DOMRenderer.js';
 

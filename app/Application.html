@@ -1,8 +1,10 @@
-<div>
-  <h3 title=":version">{{name}}, {{version}}</h3>
-  <Button caption="++" click=":increment"/>
-  <span>:counter</span>
-  <Button caption="--" click=":decrement"/>
-  <ui:listType data=":list" value="{{current}}" valueChanged=":onItemSelected"><b>No data for version {{version}}</b></ui:listType>
-  <p if=":current">Selected: {{current}}</p>
+<div class="stack">
+  <h3 title="{{version}}">{{name}}, {{version}}</h3>
+  <div>
+    <Button caption="++" click="{{increment}}"/>
+    <Button caption="--" click="{{decrement}}"/>
+  </div>
+  <ui:listType data="{{list}}" columns="{{columns}}" value="{{current}}" valueChanged="{{onItemSelected}}"><b>No data for version {{version}}</b></ui:listType>
+  <p if="current">Selected: {{current}}</p>
+  <span>{{counter}}</span>
 </div>
