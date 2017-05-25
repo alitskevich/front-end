@@ -110,9 +110,9 @@ function resolveTemplate($, elt, keyPrefix = '') {
 
       $.memoize(eachItemId, d);
 
-      const $$key = `${$key}$${someOrNull(d.$key) || ''}`;
-
-      return resolveTemplate($, { tag, attributes, children, $key: $$key });
+      return resolveTemplate($, { tag, attributes, children,
+         $key: `${$key}$${someOrNull(d.key) || someOrNull(d.id) || index}`
+      });
     }));
   }
 

@@ -7,14 +7,8 @@ export default class List extends Component {
         <li each="item of data"
           click=":updateOnClick"
           data-value=":item.id">
-          <ListItemSelector
-          value="{{item.id}}"
-          pattern="{{value}}"
-          hideCheckbox="true"
-          >
           <span>{{item.name}}</span>
-          </ListItemSelector>
-          </li>
+        </li>
         <block if="data.length">
           <else><small class="empty">:emptyMessage</small></else>
         </block>

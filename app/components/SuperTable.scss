@@ -8,9 +8,14 @@
       position: absolute;
       display: flex;
       .col {
-        width: 60px;
+        min-width: 20px;
         background-color: white;
         &:first-child{
+        }
+        div {
+          width:100%;
+          text-overflow: ellipsis;
+
         }
       }
     }
@@ -19,8 +24,18 @@
   .header {
     flex: 1 1 30px;
     height:30px;
-    .col{
+    .hcol{
       background-color: gray;
+      .splitter {
+        position: absolute;
+        right:0;
+        width:5px;
+        height:30px;
+        &:hover {
+          cursor: col-resize;
+          background-color: blue;
+        }
+      }
     }
   }
 

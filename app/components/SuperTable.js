@@ -1,23 +1,66 @@
 import Component from 'ui/Component.js';
 import './SuperTable.scss';
 const ISIZE = 20;
+let RESIZING = null;
+export class SuperTableHeaderCell extends Component {
 
-export class SuperTableRow extends Component {
+  static TEMPLATE = `<div>
+    <a class="splitter" mousedown="{{onMouseDown}}" mouseup="{{onMouseUp}}"/>
+    <div>{{column.name}}</div>
+  </div>`;
+
+  static PROPS = {
+    column: {}
+  }
+
+  onInit() {
+
+  }
+
+  onMouseDown(event) {
+
+    // this.element.className += ' dragged';
+    RESIZING = event;
+    RESIZING.X = event.clientX;
+    RESIZING.element = this.element;
+    RESIZING.column = this.column;
+    if (event) {event.preventDefault();}
+    return false;
+  }
+
+  onMouseUp(event) {
+
+    // this.element.className += ' dragged';
+    RESIZING = null;
+    if (event) {event.preventDefault();}
+    return false;
+  }
+
+}
+
+export class SuperTableCell extends Component {
+
+  static TEMPLATE = `<span>{{value}}</span>`;
+
+  static PROPS = {
+    value: { default: null },
+    data:{}
+  }
 }
 
 export default class SuperTable extends Component {
 
   static TEMPLATE =
     `<div class="super-table">
-      <div class="header row">
+      <div class="row header" mousemove="{{onHeaderMouseMove}}">
         <div class="cols free-cols">
-          <div each="col of freeCols" class="col {{cellClass}}">
-              <span>{{col.name}}</span>
+          <div each="col of freeCols" class="col hcol {{cellClass}}">
+             <SuperTableHeaderCell column="{{col}}"/>
           </div>
         </div>
         <div class="cols frozen-cols">
-          <div each="col of frozenCols" class="col {{cellClass}}">
-              <span>{{col.name}}</span>
+          <div each="col of frozenCols" class="col hcol {{cellClass}}">
+             <SuperTableHeaderCell column="{{col}}"/>
           </div>
         </div>
       </div>
@@ -27,12 +70,12 @@ export default class SuperTable extends Component {
             <div each="row of viewRows" class="row">
                 <div class="cols free-cols">
                   <div each="col of freeCols" class="col {{cellClass}}">
-                      <span>{{cellValue}}</span>
+                      <ui:cellType value="{{cellValue}}" data="{{row}}" meta="{{col}}"/>
                   </div>
                 </div>
                 <div class="cols frozen-cols">
                   <div each="col of frozenCols" class="col {{cellClass}}">
-                      <span>{{cellValue}}</span>
+                      <ui:cellType value="{{cellValue}}" data="{{row}}" meta="{{col}}"/>
                   </div>
                 </div>
             </div>
@@ -53,14 +96,16 @@ export default class SuperTable extends Component {
         $.freeCols = [];
         $.frozenColsWidth = 0;
         $.freeColsWidth = 0;
-        value.forEach((e, index) => {
-          const ee = { name: e.id, ...e, index };
+        value
+          .filter(e=>!e.hidden)
+          .forEach((e, index) => {
+          const ee = { name: e.id, ...e, index, width: e.width || 60 };
           if (e.required) {
             $.frozenCols.push(ee);
-            $.frozenColsWidth += e.width || 60;
+            $.frozenColsWidth += ee.width;
           } else {
             $.freeCols.push(ee);
-            $.freeColsWidth += e.width || 60;
+            $.freeColsWidth += ee.width;
           }
         });
     }
@@ -103,6 +148,13 @@ export default class SuperTable extends Component {
     const col = this.get('col');
 
     return item[col.id];
+  }
+
+  get cellType() {
+
+    const col = this.get('col');
+
+    return col.type || 'SuperTableCell';
   }
 
   get cellClass() {
@@ -159,7 +211,18 @@ export default class SuperTable extends Component {
       this.layout();
     }
   }
+  onHeaderMouseMove(event) {
 
+    if (RESIZING) {
+      const delta = event.clientX - RESIZING.X;
+      RESIZING.X = event.clientX;
+      RESIZING.column.width += delta;
+      this.frozenColsWidth = this.frozenCols.reduce((r, e)=>(r + e.width), 0);
+      this.setOffsetLeft(this.frozenColsWidth);
+
+      this.hSync();
+    }
+  }
   layout() {
 
     const st = this.scrollTop;
@@ -207,4 +270,6 @@ export default class SuperTable extends Component {
   }
 }
 
+Component.registerType(SuperTableHeaderCell);
+Component.registerType(SuperTableCell);
 Component.registerType(SuperTable);
