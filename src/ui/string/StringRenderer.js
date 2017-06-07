@@ -10,8 +10,6 @@ export function renderer({ tag, component, children, attributes }, parent, acc =
 
     c.$children = children;
 
-    c.onInit();
-
     renderer(c.resolveTemplate(), c, acc);
 
   } else {

@@ -1,84 +1,145 @@
-import { resolveDOMElement, clearAfter, finalizerFn, doneFn, wrapRenderer } from './DOMRenderer.util.js';
-import { objMap, objForEach } from '../../utils/obj.js';
+import { resolveDOMElement, ensureEltPosition, clearAfter, createPool, wrapRenderer } from './DOMRenderer.util.js';
+import { applyDOMAttributes } from './DOMRenderer.attrs.js';
 
-export const renderer = wrapRenderer((meta, component) => {
+const finalizerFn = function () {
 
-  objForEach(component.$sub, c => (c.$retained = false));
-
-  // for root element:
-  if (!component.element) {
-    component.addFinalizer(finalizerFn);
+  if (this.$sub) {
+    this.$sub.forEach((c) => c.onDone());
   }
 
-  const element = component.element = _renderer(meta, component);
+  this.$sub = this.$parent = this.$children = this.element = null;
+};
 
-  component.$sub = objMap(component.$sub, (c, key) => {
+export const renderer = wrapRenderer((meta, c) => {
 
-    if (!c.$retained) {
-      doneFn(c);
-      return;
-    }
+  if (!c.element) {
 
-    if (!c.$inited) {
-      c.$inited = true;
-    }
-    return c;
+    c.element = resolveDOMElement(meta, c.$renderParams, `${meta.$key}` );
 
-  });
+  } else {
 
-  return element;
+    applyDOMAttributes(c.element, meta.attributes);
+  }
 
+  if (meta.children) {
+
+    renderSubs(c, meta.children);
+  }
 });
 
-export function _renderer(meta, parent, params = parent.$renderParams || {}) {
+renderer.prepareRoot = function (root, config) {
+
+  root.$renderParams = config;
+
+  root.$renderParams.parentElt.$pool = {};
+
+  root.addFinalizer(finalizerFn);
+
+  root.onInit();
+
+};
+
+function _renderComponent(meta, parent, params) {
 
   const { component, children, attributes = {}, $key } = meta;
 
-  let element = null;
-
-  if (component) {
-
-    const existing = parent.$sub && parent.$sub[$key];
+  let c = parent.$sub.get($key);
+  if (!c) {
 
     const Ctor = component;
+    c = new Ctor(attributes);
+    parent.$sub.set($key, c);
+    c.$retained = 2;
+    c.$renderParams = params;
+    c.$children = children;
+    c.$parent = parent;
+    const m = c.resolveTemplate();
 
-    const c = existing || new Ctor(attributes);
+    m.$key = c.$key = $key;
 
-    (parent.$sub || (parent.$sub = {}))[$key] = c;
+    const frag = c.element = document.createDocumentFragment();
+    if (m.children) {
 
+      renderSubs(c, m.children, ()=>{
+        c.element = resolveDOMElement(m, params, `${m.$key}` );
+        c.element.appendChild(frag);
+      });
+    }
+
+  } else {
+
+    c.$retained = 1;
     c.$renderParams = params;
     c.$children = children;
     c.$key = $key;
     c.$parent = parent;
-    c.$retained = true;
 
-    if (existing) {
+    ensureEltPosition(c.element, params);
 
-      c.update(attributes);
-
-    } else {
-
-      c.element = _renderer(c.resolveTemplate(), c, params);
-      c.onInit();
-      c.addFinalizer(finalizerFn);
-    }
-
-    element = c.element;
-
-  } else {
-
-    element = resolveDOMElement(meta, params, `${parent.$key || ''}:${meta.$key}` );
-
-    if (children) {
-
-      const lastChildElt = children.reduce((prevElt, meta2) =>
-      _renderer(meta2, parent, { parentElt: element, prevElt, renderer }),
-      null);
-
-      clearAfter(element, lastChildElt);
-    }
-
+    c.update(attributes);
   }
 
-  return element;
+  return c.element;
+}
+
+function _renderChildren(element, children, target) {
+
+    createPool(element);
+
+    const p = { parentElt: element, renderer };
+
+    const lastElt = children.reduce(function reducer(prevElt, meta) {
+
+      p.prevElt = prevElt;
+
+      if (meta.component) {
+
+        return _renderComponent(meta, target, p);
+      }
+
+      const e = resolveDOMElement(meta, p, `${meta.$key}` );
+
+      if (meta.children) {
+
+        _renderChildren(e, meta.children, target, p);
+      }
+
+      return e;
+    }, null);
+
+    clearAfter(element, lastElt);
+
+    return element;
+
+}
+
+function renderSubs(c, children, cb) {
+
+  if (!c.$sub) {
+    c.$sub = new Map();
+  } else {
+    c.$sub.forEach(cc=>(cc.$retained = 0));
+  }
+
+  _renderChildren(c.element, children, c, c.$renderParams);
+
+  if (cb) {
+
+    cb();
+  }
+
+  c.$sub.forEach(cc => {
+    if (!cc.$retained) {
+      cc.onDone();
+      c.$sub.delete(cc.$key);
+    }
+  });
+
+  c.$sub.forEach(cc => {
+    if (cc.$retained === 2) {
+      cc.addFinalizer(finalizerFn);
+      cc.onInit();
+    }
+  });
+
 }

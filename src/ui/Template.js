@@ -16,6 +16,7 @@ const COMPONENTS_TYPES = new Map();
 
 const RE_PLACEHOLDER = /\{\{([a-zA-Z0-9\._$]+)\}\}/g;
 const RE_SINGLE_PLACEHOLDER = /^\{\{([a-zA-Z0-9\._$]+)\}\}$/;
+const RE_IF_PLACEHOLDER = /if="([a-zA-Z0-9\._$]+)"/g;
 
 function compileComponentType(elt) {
   const tag = elt.tag;
@@ -44,7 +45,7 @@ function compileAttr(_p) {
   if (p[0] === ':') {
 
     p = p.slice(1);
-
+    window.console.warn('Deprecated placeholder notation: ' + _p);
     return $=>$.get(p);
   }
 
@@ -84,24 +85,25 @@ function resolveChildren($, children, keyPrefix) {
   return r;
 }
 
-function resolveTemplate($, elt, keyPrefix = '') {
+function resolveTemplate($, elt, keyPrefix) {
 
   let { tag, attributes, children, $key,
      eachItemId, eachDataId, ifConditionId, ifElse,
      resolve, resolveComponentType } = elt;
 
   if (resolve) {
+
     return resolve.call(elt, $, $key);
   }
 
   if (ifConditionId && !$.get(ifConditionId)) {
 
-      return ifElse ? resolveTemplate($, ifElse) : null;
+    return ifElse ? resolveTemplate($, ifElse) : null;
   }
 
   const component = resolveComponentType && resolveComponentType($);
 
-  $key = `${keyPrefix}${component ? component.name : ''}${$key}`;
+  $key = `${keyPrefix || ''}${component ? component.name : ''}${$key}`;
 
   if (eachItemId) {
 
@@ -110,8 +112,8 @@ function resolveTemplate($, elt, keyPrefix = '') {
 
       $.memoize(eachItemId, d);
 
-      return resolveTemplate($, { tag, attributes, children,
-         $key: `${$key}$${someOrNull(d.key) || someOrNull(d.id) || index}`
+      return resolveTemplate($, { tag, attributes, children, resolveComponentType,
+         $key: `${$key}$${someOrNull(d.$id) || someOrNull(d.id) || index}`
       });
     }));
   }
@@ -211,6 +213,21 @@ export default class Template {
   static install = (ctor) => {
 
     const text = ctor.TEMPLATE || `No template for ${ctor.NAME || ctor.name}`;
+
+    if (!ctor.hasOwnProperty('PROPS')) {
+      ctor.PROPS = {};
+    }
+
+    const autoRegFn = (s, _key) => {
+
+      const key = _key.split('.')[0];
+      if ( !ctor.PROPS[key] && !(ctor.prototype.__lookupGetter__(key)) && !ctor.prototype[key]) {
+        ctor.PROPS[key] = {};
+      }
+    };
+
+    ctor.TEMPLATE.replace(RE_PLACEHOLDER, autoRegFn);
+    ctor.TEMPLATE.replace(RE_IF_PLACEHOLDER, autoRegFn);
 
     const root = compileTemplate(typeof text === 'string' ? xmlParse(text.trim()) : text);
 

@@ -20,7 +20,7 @@ export const Component = UiComponent;
  */
 export function bootstrap(config) {
 
-  const { markup, state = {}, Root, componentTypes = [] } = config;
+  const { renderer, markup, state = {}, Root, componentTypes = [] } = config;
 
   const $Root = Root || class $R extends Component {
 
@@ -33,9 +33,10 @@ export function bootstrap(config) {
 
   const root = new $Root(state);
 
-  root.$renderParams = config;
+  if (renderer.prepareRoot) {
 
-  root.onInit();
+    renderer.prepareRoot(root, config);
+  }
 
   return () => root.render();
 }

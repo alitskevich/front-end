@@ -30,7 +30,7 @@ export function objForEach(x, fn) {
   return x;
 }
 
-export function objMap(x, fn = (value, key) => ({ value, key })) {
+export function objMap(x, fn) {
 
   const result = {};
 
@@ -105,19 +105,23 @@ export function objGet(x, key) {
 
 export function getter(k) {
 
-    let r = this[k], arr, l;
+    let posE = k.indexOf('.');
 
-    if (r === arr && (l = (arr = k.split('.')).length) > 1) {
-
-      r = this[arr[0]];
-      for (let i = 1; i < l; r = r[arr[i++]]) {
-        if (!r) {
-          return Object.undefined;
-        }
-      }
+    if (posE === -1) {
+      return this[k];
     }
 
-    return r;
+    let posB = 0, rr = this;
+    while (posE !== -1) {
+      rr = rr[k.slice(posB, posE)];
+      if (!rr) {
+        return Object.undefined;
+      }
+      posB = posE + 1;
+      posE = k.indexOf('.', posB);
+    }
+
+    return rr[k.slice(posB)];
 }
 
 // overrides methods with super.

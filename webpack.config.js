@@ -6,10 +6,6 @@ module.exports = {
   // define global variables
   // file loaders
   rules: [
-    // {
-    //   test: /(\.json)$/,
-    //   loader: 'file-loader?name=js/[name].[ext]'
-    // },
     {
       test: /(\.jpg|\.jpeg|\.png|\.eot|\.ttf|\.svg|\.woff|\.woff2)$/,
       loader: 'file-loader?name=shinobi-fonts/[name]-[sha1:hash].[ext]'

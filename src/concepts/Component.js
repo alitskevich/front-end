@@ -1,5 +1,4 @@
 /* eslint no-console: 0 */
-import { isFunction } from '../utils/fn.js';
 import { getter } from '../utils/obj.js';
 import Entity from './Entity.js';
 import Property from './Property.js';
@@ -52,7 +51,7 @@ export default class Component extends Entity {
       this.$finalizers.forEach(fn=>fn.call(this, this));
     }
 
-    this.isDone = true;
+    this.$isDone = true;
   }
 
   onError(error) {
@@ -88,16 +87,16 @@ export default class Component extends Entity {
 
     // memoized
     const memoized = this.$ && getter.call(this.$, key);
-    if (memoized !== Object.undefined) {
+    if (typeof memoized !== 'undefined') {
 
       return memoized;
     }
 
     // from properties or own member
     const value = getter.call(this, key);
-    if (value !== Object.undefined) {
+    if (typeof value !== 'undefined') {
 
-      return !isFunction(value) ? value : this.memoize(key, value.bind(this));
+      return typeof value === 'function' ? this.memoize(key, value.bind(this)) : value;
     }
 
     // not found

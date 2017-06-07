@@ -27,7 +27,10 @@ export default class UiComponent extends Component {
   // By default, renderer function comes from `this.$renderParams.renderer`
   render(renderer = this.$renderParams && this.$renderParams.renderer || fnId) {
 
-    return renderer(this.resolveTemplate(), this);
+    if (!this.$isDone) {
+
+      renderer(this.resolveTemplate(), this);
+    }
   }
 
   // returns internal structure built on template and current state
@@ -36,22 +39,28 @@ export default class UiComponent extends Component {
     return Template.resolve(this);
   }
 
+  // Updates State with given delta on mute
+  updateOnMute(delta) {
+
+    return super.update(delta);
+  }
+
   // Updates State with given delta
   update(delta) {
 
-    const changes = super.update(delta);
+    const changes = this.updateOnMute(delta);
 
-    if (!changes.isEmpty || Template.hasTransclusion(this)) {
+    if (this.shouldInvalidateOnUpdate(changes)) {
 
       this.invalidate();
     }
     return changes;
   }
 
-  // decided if component should Invalidate On Update
+  // decided if component should Invalidate itself On Update
   shouldInvalidateOnUpdate(changes) {
 
-    return;
+    return changes.length || Template.hasTransclusion(this);
   }
 
   // Useful routine implemented typical reaction on click event
