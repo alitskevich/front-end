@@ -255,7 +255,9 @@ export default class SuperTable extends Component {
   }
 
   hSync() {
-
+    if (!this.element) {
+      return;
+    }
     this.element.querySelectorAll('.free-cols').forEach(c=>{
       c.style.left = this.offsetLeft;
     });

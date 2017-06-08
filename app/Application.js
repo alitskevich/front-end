@@ -69,8 +69,7 @@ export default class Application extends Component {
 
   get listType() {
 
-    return 'SuperTable';
-    // this.odd ? 'List' : 'Tree';
+    return this.odd ? 'SuperTable' : 'Tree';
   }
 
   increment() {

@@ -19,12 +19,15 @@ export function ensureEltPosition(element, { parentElt, prevElt }) {
 }
 
 export function createPool(element) {
+
   const pool = element.$pool = {};
   let p = element.firstChild;
+
   while (p) {
     pool[p.$key] = p;
     p = p.nextSibling;
   }
+
   return pool;
 }
 
@@ -64,7 +67,7 @@ export function resolveDOMElement(meta, { parentElt, prevElt }, $key) {
 
   const placeholder = (prevElt ? prevElt.nextSibling : parentElt.firstChild) || null;
 
-  let c = parentElt.$pool[$key];
+  let c = parentElt.$pool && parentElt.$pool[$key];
 
   if (!c) {
 
@@ -101,7 +104,7 @@ export function createElement(meta, $key, parentElt) {
 
   }
   // console.log('create DOM', $key);
-  parentElt.$pool[$key] = e;
+  (parentElt.$pool || (parentElt.$pool = {}))[$key] = e;
 
   e.$key = $key;
 
@@ -149,9 +152,9 @@ export function removeElt(e) {
     }
     // console.log('remove DOM', e.$key);
 
-    // if(parentElt.$children){
-    delete parentElt.$pool[e.$key];
-    // }
+    if (parentElt.$pool) {
+      delete parentElt.$pool[e.$key];
+    }
 
     e.$key = e.$attributes = null;
   }

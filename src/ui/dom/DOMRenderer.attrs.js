@@ -46,7 +46,7 @@ export function applyDOMAttributes(e, _attrs) {
 
   if (_attrs) {
 
-    const lastAttrs = e.$attributes;
+    const lastAttrs = e.$attributes || {};
 
     if (e.nodeName === '#text') {
 

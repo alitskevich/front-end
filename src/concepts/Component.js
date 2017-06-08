@@ -42,6 +42,7 @@ export default class Component extends Entity {
   }
 
   onInit() {
+    this.$isInited = true;
   }
 
   onDone() {
@@ -49,8 +50,18 @@ export default class Component extends Entity {
     if (this.$finalizers) {
 
       this.$finalizers.forEach(fn=>fn.call(this, this));
+      this.$finalizers = null;
     }
 
+    if (this.$children) {
+
+      this.forEachChild(c => c.onDone());
+      this.$children = null;
+    }
+
+    if (this.$parent) {
+      this.$parent.removeChild(this.$key);
+    }
     this.$isDone = true;
   }
 
@@ -64,6 +75,44 @@ export default class Component extends Entity {
     (this.$finalizers || (this.$finalizers = [])).push(fn);
   }
 
+  ////////////////////////
+  // Children
+  ///////////////////////
+
+  addChild($key, c) {
+
+    if (c.$parent && c.$parent !== this) {
+      c.$parent.removeChild(c);
+    }
+
+    c.$key = $key;
+    c.$parent = this;
+
+    if (!this.$children) {
+      this.$children = new Map();
+    }
+
+    this.$children.set($key, c);
+
+    return this;
+  }
+
+  getChild($key) {
+
+    return this.$children ? this.$children.get($key) : null;
+  }
+
+  removeChild($key) {
+    if (this.$children) {
+      return this.$children.delete($key);
+    }
+  }
+
+  forEachChild(fn) {
+    if (this.$children) {
+      return this.$children.forEach(fn);
+    }
+  }
   ////////////////////////
   // State
   ///////////////////////

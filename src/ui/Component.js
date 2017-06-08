@@ -27,7 +27,7 @@ export default class UiComponent extends Component {
   // By default, renderer function comes from `this.$renderParams.renderer`
   render(renderer = this.$renderParams && this.$renderParams.renderer || fnId) {
 
-    if (!this.$isDone) {
+    if ( !this.$isDone) {
 
       renderer(this.resolveTemplate(), this);
     }

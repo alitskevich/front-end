@@ -1,13 +1,21 @@
-import { resolveDOMElement, ensureEltPosition, clearAfter, createPool, wrapRenderer } from './DOMRenderer.util.js';
+import { resolveDOMElement, ensureEltPosition, clearAfter, wrapRenderer } from './DOMRenderer.util.js';
 import { applyDOMAttributes } from './DOMRenderer.attrs.js';
 
-const finalizerFn = function () {
+const finalizerFn = function (c) {
 
-  if (this.$sub) {
-    this.$sub.forEach((c) => c.onDone());
+  c.element = null;
+};
+
+const initializerFn = function (c) {
+
+  c.forEachChild(initializerFn);
+
+  if (c.$retained === true) {
+    c.addFinalizer(finalizerFn);
+    c.onInit();
+  } else {
+
   }
-
-  this.$sub = this.$parent = this.$children = this.element = null;
 };
 
 export const renderer = wrapRenderer((meta, c) => {
@@ -24,59 +32,71 @@ export const renderer = wrapRenderer((meta, c) => {
   if (meta.children) {
 
     renderSubs(c, meta.children);
+
+    initializerFn(c);
   }
+
 });
 
 renderer.prepareRoot = function (root, config) {
 
   root.$renderParams = config;
 
-  root.$renderParams.parentElt.$pool = {};
+  root.$retained = true;
 
   root.addFinalizer(finalizerFn);
 
-  root.onInit();
-
 };
 
-function _renderComponent(meta, parent, params) {
+function getSubComponent(meta, parent, params) {
 
   const { component, children, attributes = {}, $key } = meta;
 
-  let c = parent.$sub.get($key);
+  let c = parent.getChild($key);
   if (!c) {
 
     const Ctor = component;
     c = new Ctor(attributes);
-    parent.$sub.set($key, c);
-    c.$retained = 2;
-    c.$renderParams = params;
-    c.$children = children;
-    c.$parent = parent;
+    parent.addChild($key, c);
+    c.$retained = true;
+
+  } else {
+
+    c.$retained = {};
+  }
+  c.$renderParams = params;
+  c.$childrenMeta = children;
+
+  return c;
+
+}
+function renderSubComponent(meta, parent, params) {
+
+  const { $key } = meta;
+
+  let c = getSubComponent(meta, parent, params);
+
+  if (c.$retained === true) {
+
     const m = c.resolveTemplate();
 
-    m.$key = c.$key = $key;
+    m.$key = $key;
 
-    const frag = c.element = document.createDocumentFragment();
     if (m.children) {
+      // const frag = c.element = document.createDocumentFragment();
 
-      renderSubs(c, m.children, ()=>{
-        c.element = resolveDOMElement(m, params, `${m.$key}` );
-        c.element.appendChild(frag);
-      });
+      c.element = resolveDOMElement(m, params, `${m.$key}` );
+      renderSubs(c, m.children);
+
+      // c.element.appendChild(frag);
+    } else {
+      c.element = resolveDOMElement(m, params, `${m.$key}` );
     }
 
   } else {
 
-    c.$retained = 1;
-    c.$renderParams = params;
-    c.$children = children;
-    c.$key = $key;
-    c.$parent = parent;
-
     ensureEltPosition(c.element, params);
-
-    c.update(attributes);
+    c.update(meta.attributes);
   }
 
   return c.element;
@@ -84,7 +104,7 @@ function _renderComponent(meta, parent, params) {
 
 function _renderChildren(element, children, target) {
 
-    createPool(element);
+    // createPool(element);
 
     const p = { parentElt: element, renderer };
 
@@ -94,7 +114,7 @@ function _renderChildren(element, children, target) {
 
       if (meta.component) {
 
-        return _renderComponent(meta, target, p);
+        return renderSubComponent(meta, target, p);
       }
 
       const e = resolveDOMElement(meta, p, `${meta.$key}` );
@@ -113,33 +133,12 @@ function _renderChildren(element, children, target) {
 
 }
 
-function renderSubs(c, children, cb) {
+function renderSubs(c, children) {
 
-  if (!c.$sub) {
-    c.$sub = new Map();
-  } else {
-    c.$sub.forEach(cc=>(cc.$retained = 0));
-  }
+  c.forEachChild(cc=>(cc.$retained = false));
 
   _renderChildren(c.element, children, c, c.$renderParams);
 
-  if (cb) {
-
-    cb();
-  }
-
-  c.$sub.forEach(cc => {
-    if (!cc.$retained) {
-      cc.onDone();
-      c.$sub.delete(cc.$key);
-    }
-  });
-
-  c.$sub.forEach(cc => {
-    if (cc.$retained === 2) {
-      cc.addFinalizer(finalizerFn);
-      cc.onInit();
-    }
-  });
+  c.forEachChild(cc => { if (!cc.$retained) { cc.onDone(); } });
 
 }

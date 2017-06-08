@@ -8,7 +8,7 @@ export function renderer({ tag, component, children, attributes }, parent, acc =
 
     const c = new Ctor(attributes);
 
-    c.$children = children;
+    c.$childrenMeta = children;
 
     renderer(c.resolveTemplate(), c, acc);
 

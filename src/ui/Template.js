@@ -16,7 +16,7 @@ const COMPONENTS_TYPES = new Map();
 
 const RE_PLACEHOLDER = /\{\{([a-zA-Z0-9\._$]+)\}\}/g;
 const RE_SINGLE_PLACEHOLDER = /^\{\{([a-zA-Z0-9\._$]+)\}\}$/;
-const RE_IF_PLACEHOLDER = /if="([a-zA-Z0-9\._$]+)"/g;
+const RE_CHECK_PLACEHOLDER = /(?:each=".+?\sof\s|if="|\{\{)([a-zA-Z0-9\._$\s]+)(\}\}|")/g;
 
 function compileComponentType(elt) {
   const tag = elt.tag;
@@ -147,7 +147,7 @@ export function compileTemplate(elt) {
 
   if (tag === 'transclude') {
 
-    elt.resolve = $ => $.$children;
+    elt.resolve = $ => $.$childrenMeta;
     return elt;
   }
 
@@ -226,8 +226,7 @@ export default class Template {
       }
     };
 
-    ctor.TEMPLATE.replace(RE_PLACEHOLDER, autoRegFn);
-    ctor.TEMPLATE.replace(RE_IF_PLACEHOLDER, autoRegFn);
+    ctor.TEMPLATE.replace(RE_CHECK_PLACEHOLDER, autoRegFn);
 
     const root = compileTemplate(typeof text === 'string' ? xmlParse(text.trim()) : text);
 
