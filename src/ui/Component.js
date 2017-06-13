@@ -39,21 +39,16 @@ export default class UiComponent extends Component {
     return Template.resolve(this);
   }
 
-  // Updates State with given delta on mute
-  updateOnMute(delta) {
-
-    return super.update(delta);
-  }
-
   // Updates State with given delta
   update(delta) {
+    this.updatingDepth = (this.updatingDepth || 0) + 1;
+    const changes = super.update(delta);
 
-    const changes = this.updateOnMute(delta);
-
-    if (this.shouldInvalidateOnUpdate(changes)) {
+    if (this.updatingDepth === 1 && this.shouldInvalidateOnUpdate(changes)) {
 
       this.invalidate();
     }
+    this.updatingDepth--;
     return changes;
   }
 

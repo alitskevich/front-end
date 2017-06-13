@@ -10,11 +10,10 @@ const initializerFn = function (c) {
 
   c.forEachChild(initializerFn);
 
-  if (c.$retained === true) {
+  if (!c.$isInited) {
     c.addFinalizer(finalizerFn);
     c.onInit();
-  } else {
-
+    c.$isInited = true;
   }
 };
 
@@ -41,49 +40,30 @@ export const renderer = wrapRenderer((meta, c) => {
 renderer.prepareRoot = function (root, config) {
 
   root.$renderParams = config;
-
-  root.$retained = true;
-
-  root.addFinalizer(finalizerFn);
-
 };
 
-function getSubComponent(meta, parent, params) {
+function renderSubComponent(meta, parent, params) {
 
   const { component, children, attributes = {}, $key } = meta;
 
-  let c = parent.getChild($key);
-  if (!c) {
+  const existing = parent.getChild($key);
+  let c = existing;
+  if (!existing) {
 
     const Ctor = component;
     c = new Ctor(attributes);
+
     parent.addChild($key, c);
-    c.$retained = true;
-
-  } else {
-
-    c.$retained = {};
-  }
-  c.$renderParams = params;
-  c.$childrenMeta = children;
-
-  return c;
-
-}
-function renderSubComponent(meta, parent, params) {
-
-  const { $key } = meta;
-
-  let c = getSubComponent(meta, parent, params);
-
-  if (c.$retained === true) {
 
     const m = c.resolveTemplate();
+
+    c.$renderParams = params;
 
     m.$key = $key;
 
     if (m.children) {
       // const frag = c.element = document.createDocumentFragment();
+      c.$childrenMeta = m.children;
 
       c.element = resolveDOMElement(m, params, `${m.$key}` );
       renderSubs(c, m.children);
@@ -95,22 +75,24 @@ function renderSubComponent(meta, parent, params) {
 
   } else {
 
+    c.$renderParams = params;
+
+    c.$childrenMeta = children;
+
     ensureEltPosition(c.element, params);
     c.update(meta.attributes);
   }
+
+  c.$retained = true;
 
   return c.element;
 }
 
 function _renderChildren(element, children, target) {
 
-    // createPool(element);
-
-    const p = { parentElt: element, renderer };
-
     const lastElt = children.reduce(function reducer(prevElt, meta) {
 
-      p.prevElt = prevElt;
+      const p = { parentElt: element, renderer, prevElt };
 
       if (meta.component) {
 

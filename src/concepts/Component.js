@@ -6,10 +6,10 @@ import system from './Application.js';
 
 /**
  * A Component is an Entity that
- * 1) manages its state via properties and
- * 2) intended to be a part of a whole system:
- *    - life-cycle hooks to be invoked from container
- *    - events aware
+ * 1) manages its state via properties
+ * 2) supports parent/child relationships
+ * 3) event-driven
+ * 4) life-cycle hooks to be invoked from container
  */
 export default class Component extends Entity {
 
@@ -22,30 +22,50 @@ export default class Component extends Entity {
     Object.assign(this, options);
 
     Property.update(this, initialState);
-
-    this.onCreate();
   }
 
   ////////////////////////
   // Events
   ///////////////////////
+
   emitEvent(event) {
 
     system.emitEvent(event);
+  }
+
+  subscribe(eventType, handler, handlerId) {
+
+    this.$hasEventHandlers = true;
+
+    return system.subscribe(eventType, handler, handlerId || this._id);
+  }
+
+  unsubscribe(handlerId) {
+
+    system.unsubscribe(handlerId || this._id);
   }
 
   ////////////////////////
   // Lifetime hooks
   ///////////////////////
 
-  onCreate() {
-  }
-
   onInit() {
+
     this.$isInited = true;
   }
 
   onDone() {
+
+    if (this.$isDone) {
+      return;
+    }
+
+    this.$isDone = true;
+
+    if (this.$hasEventHandlers) {
+
+      system.unsubscribe(this._id);
+    }
 
     if (this.$finalizers) {
 
@@ -60,14 +80,14 @@ export default class Component extends Entity {
     }
 
     if (this.$parent) {
+
       this.$parent.removeChild(this.$key);
     }
-    this.$isDone = true;
   }
 
   onError(error) {
 
-    console.error(error);
+    this.log('error', error);
   }
 
   addFinalizer(fn) {
@@ -77,7 +97,12 @@ export default class Component extends Entity {
 
   ////////////////////////
   // Children
-  ///////////////////////
+  ////////////////////////
+
+  get parent() {
+
+    return this.$parent;
+  }
 
   addChild($key, c) {
 
@@ -113,6 +138,7 @@ export default class Component extends Entity {
       return this.$children.forEach(fn);
     }
   }
+
   ////////////////////////
   // State
   ///////////////////////

@@ -41,7 +41,8 @@ export function wrapRenderer(renderer) {
     }
     // avoid recurrsive rendering
     if (component.$isRendering) {
-      // debounce sequental rendering
+      // debounce recurrsive rendering
+      component.log('recurrsive rendering');
 
       if (!component.$pendingRendering) {
         component.$pendingRendering = true;

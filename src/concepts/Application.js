@@ -12,8 +12,6 @@ const application = {
 
   init(modulesConfig) {
 
-    applyEventBus(application);
-
     assert(Array.isArray(modulesConfig), 'Modules config has to be an array');
 
     const modules = modulesConfig.map(cfg => new cfg.type({ application, ...cfg }));
@@ -27,5 +25,7 @@ const application = {
       .then(() => application);
   }
 };
+
+applyEventBus(application);
 
 export default application;

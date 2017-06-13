@@ -13,8 +13,16 @@ const _curry = (fn, args0, lengthLimit) => {
 
 export const isFunction = f => !!(f && f.constructor && f.call && f.apply);
 
-export const functionDisplayName = f => f.displayName || (f.displayName = f.name || ((/^function\s+([\w\$]+)\s*\(/.exec(f.toString()) || [])[1] || 'C'));
-export const log = (...args) =>{ console.log(...args); return args[args.length - 1]; };
+export const functionDisplayName = f => f.displayName ||
+  (f.displayName = f.name || ((/^function\s+([\w\$]+)\s*\(/.exec(f.toString()) || [])[1] || 'C'));
+
+export const log = (...args) =>{
+
+  const code = ('' + args[0]).toLowerCase();
+  const mode = code.startsWith('error') ? 'error' : 'log';
+
+  console[mode](...args); return args[args.length - 1];
+};
 
 export function fnVoid() {}
 export function fnThis() { return this; }
