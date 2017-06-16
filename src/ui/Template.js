@@ -1,5 +1,5 @@
 /* eslint no-eq-null: "off" */
-import { fnId, someOrNull, assert } from '../utils/fn.js';
+import { someOrNull, assert } from '../utils/fn.js';
 import { xmlParse, XmlNode } from '../utils/xml.js';
 import { objMap } from '../utils/obj.js';
 import { capitalize } from '../utils/str.js';
@@ -75,7 +75,7 @@ function resolveChildren($, children, keyPrefix) {
     if (sub) {
 
       if (Array.isArray(sub)) {
-        r.push(...sub.filter(fnId));
+        r.push(...sub);
       } else {
         r.push(sub);
       }
@@ -108,7 +108,7 @@ function resolveTemplate($, elt, keyPrefix) {
   if (eachItemId) {
 
     const data = $.get(eachDataId);
-    return !data ? null : [].concat(...data.filter(fnId).map((d, index) => {
+    return !data ? null : [].concat(...[...data].map((d, index) => {
 
       $.memoize(eachItemId, d);
 
@@ -135,7 +135,8 @@ function resolveTemplate($, elt, keyPrefix) {
   children = !children ? null : resolveChildren($, children, $key + '.');
 
   if (SPECIAL_TAGS.indexOf(tag) !== -1) {
-    return children;
+
+    return children.map(e=>Object.assign(e, { $key: $key + e.$key }));
   }
 
   return { tag, component, attributes, children, $key };
@@ -147,7 +148,7 @@ export function compileTemplate(elt) {
 
   if (tag === 'transclude') {
 
-    elt.resolve = $ => $.$childrenMeta;
+    elt.resolve = $ => $.$transclude;
     return elt;
   }
 

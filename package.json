@@ -35,7 +35,7 @@
   "scripts": {
     "start": "node run-webpack-dev-server",
     "build": "rm -rf build && ./node_modules/.bin/webpack",
-    "build-ui": "rm -rf build && babel-node run-webpack-ui && cp build/index.js ../shinobi/vendor/ui-widgets/index.js",
+    "build-ui": "rm -rf build && babel-node run-webpack-ui && cp build/index.js ../shinobi/vendor/ui-widgets/index.js && cp build/index.js ../grodno/vendor/ui/index.js",
     "reset": "rm -rf node_modules && npm run nvm && npm i",
     "jasmine": "nodemon --watch src --exec babel-node run-jasmine",
     "karma": "babel-node run-karma",

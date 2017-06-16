@@ -19,20 +19,29 @@ const initializerFn = function (c) {
 
 export const renderer = wrapRenderer((meta, c) => {
 
-  if (!c.element) {
+  if (meta.component) {
+    meta.$key = c.$key;
+    c.element = renderSubComponent(meta, c, c.$renderParams);
 
-    c.element = resolveDOMElement(meta, c.$renderParams, `${meta.$key}` );
+    initializerFn(c);
 
   } else {
 
-    applyDOMAttributes(c.element, meta.attributes);
-  }
+    if (!c.element) {
 
-  if (meta.children) {
+      c.element = resolveDOMElement(meta, c.$renderParams, `${meta.$key}` );
 
-    renderSubs(c, meta.children);
+    } else {
 
-    initializerFn(c);
+      applyDOMAttributes(c.element, meta.attributes);
+    }
+
+    if (meta.children) {
+
+      renderSubs(c, meta.children);
+
+      initializerFn(c);
+    }
   }
 
 });
@@ -55,29 +64,28 @@ function renderSubComponent(meta, parent, params) {
 
     parent.addChild($key, c);
 
+    c.$renderParams = params;
+    c.$transclude = children;
+
     const m = c.resolveTemplate();
 
-    c.$renderParams = params;
-
     m.$key = $key;
+    if (m.component) {
 
-    if (m.children) {
-      // const frag = c.element = document.createDocumentFragment();
-      c.$childrenMeta = m.children;
+      c.element = renderSubComponent(m, c, params);
+
+    } else if (m.children) {
+      const frag = c.element = document.createDocumentFragment();
 
       c.element = resolveDOMElement(m, params, `${m.$key}` );
       renderSubs(c, m.children);
 
-      // c.element.appendChild(frag);
+      c.element.appendChild(frag);
     } else {
       c.element = resolveDOMElement(m, params, `${m.$key}` );
     }
 
   } else {
-
-    c.$renderParams = params;
-
-    c.$childrenMeta = children;
 
     ensureEltPosition(c.element, params);
     c.update(meta.attributes);
