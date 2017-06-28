@@ -65,11 +65,13 @@ function renderSubComponent(meta, parent, params) {
     parent.addChild($key, c);
 
     c.$renderParams = params;
+
     c.$transclude = children;
 
     const m = c.resolveTemplate();
 
     m.$key = $key;
+
     if (m.component) {
 
       c.element = renderSubComponent(m, c, params);
@@ -88,6 +90,9 @@ function renderSubComponent(meta, parent, params) {
   } else {
 
     ensureEltPosition(c.element, params);
+
+    c.$transclude = children;
+
     c.update(meta.attributes);
   }
 

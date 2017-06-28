@@ -1,10 +1,7 @@
-class SoftwareDevelopmentProcess {
 
-  constructor() {
+export default class SoftwareDevelopmentProcess {
 
-  }
-
-  config({ team, resources, timeline }) {
+  constructor({ team, resources, timeline }) {
 
   }
 

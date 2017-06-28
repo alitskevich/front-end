@@ -1,5 +1,5 @@
 /* eslint no-eq-null: "off" */
-import { someOrNull, assert } from '../utils/fn.js';
+import { someOrNull, assert, functionDisplayName } from '../utils/fn.js';
 import { xmlParse, XmlNode } from '../utils/xml.js';
 import { objMap } from '../utils/obj.js';
 import { capitalize } from '../utils/str.js';
@@ -11,12 +11,15 @@ Object.jsx = (tag, attributes, ...children) => new XmlNode(
   );
 
 const SPECIAL_TAGS = ['else', 'then', 'block', 'children'];
+const ITERATOR_PROP = { isReadOnly: true, get: (T, k)=>(T.$ && T.$[k]) };
 
 const COMPONENTS_TYPES = new Map();
 
 const RE_PLACEHOLDER = /\{\{([a-zA-Z0-9\._$]+)\}\}/g;
 const RE_SINGLE_PLACEHOLDER = /^\{\{([a-zA-Z0-9\._$]+)\}\}$/;
-const RE_CHECK_PLACEHOLDER = /(?:each=".+?\sof\s|if="|\{\{)([a-zA-Z0-9\._$\s]+)(\}\}|")/g;
+const RE_IF_PLACEHOLDER = /if="([a-zA-Z0-9\._$\s]+)"/g;
+const RE_TAG_PLACEHOLDER = /<[a-z]+:([a-zA-Z0-9\._$\s]+)\s/g;
+const RE_EACH_PLACEHOLDER = /each="([a-zA-Z0-9]+?)\sof\s([a-zA-Z0-9\._$\s]+)"/g;
 
 function compileComponentType(elt) {
   const tag = elt.tag;
@@ -33,29 +36,22 @@ function compileComponentType(elt) {
     } else if (tag[0] === tag[0].toUpperCase()) {
       elt.resolveComponentType = () => COMPONENTS_TYPES.get(tag);
     }
+
   } else {
+
     elt.resolveComponentType = () => tag;
   }
 }
 
-function compileAttr(_p) {
-
-  let p = _p;
-
-  if (p[0] === ':') {
-
-    p = p.slice(1);
-    window.console.warn('Deprecated placeholder notation: ' + _p);
-    return $=>$.get(p);
-  }
+function compileAttr(p) {
 
   if (p.indexOf && p.indexOf('{{') !== -1) {
 
     if (p.match(RE_SINGLE_PLACEHOLDER)) {
 
-      p = p.slice(2, -2);
+      let key = p.slice(2, -2);
 
-      return $=>$.get(p);
+      return $=>$.get(key);
     }
 
     return $ => p.replace(RE_PLACEHOLDER,
@@ -103,7 +99,7 @@ function resolveTemplate($, elt, keyPrefix) {
 
   const component = resolveComponentType && resolveComponentType($);
 
-  $key = `${keyPrefix || ''}${component ? component.name : ''}${$key}`;
+  $key = `${keyPrefix || ''}${component ? component.NAME : ''}${$key}`;
 
   if (eachItemId) {
 
@@ -157,6 +153,7 @@ export function compileTemplate(elt) {
   if (attributes) {
 
     elt.attributes = objMap(attributes, (attr, k) => {
+
       if (k === 'each') {
 
         const [scopeId, , dataId] = attr.split(' ');
@@ -192,6 +189,7 @@ export function compileTemplate(elt) {
   }
 
   if (children) {
+
     children.forEach(compileTemplate);
   }
 
@@ -213,40 +211,52 @@ export default class Template {
 
   static install = (ctor) => {
 
-    const text = ctor.TEMPLATE || `No template for ${ctor.NAME || ctor.name}`;
+    if (!ctor.hasOwnProperty('NAME')) {
+      ctor.NAME = functionDisplayName(ctor);
+    }
+
+    const name = ctor.NAME;
+
+    const text = ctor.TEMPLATE || `No template for ${name}`;
 
     if (!ctor.hasOwnProperty('PROPS')) {
       ctor.PROPS = {};
     }
 
-    const autoRegFn = (s, _key) => {
-
+    const ensureProp = (_, _key, prop)=>{
       const key = _key.split('.')[0];
       if ( !ctor.PROPS[key] && !(ctor.prototype.__lookupGetter__(key)) && !ctor.prototype[key]) {
-        ctor.PROPS[key] = {};
+        ctor.PROPS[key] = prop || {};
       }
     };
 
-    ctor.TEMPLATE.replace(RE_CHECK_PLACEHOLDER, autoRegFn);
+    ctor.TEMPLATE.replace(RE_EACH_PLACEHOLDER, (s, iteratorKey, key) => {
+
+      ensureProp('', iteratorKey, ITERATOR_PROP);
+      ensureProp('', key);
+    });
+
+    ctor.TEMPLATE.replace(RE_IF_PLACEHOLDER, ensureProp );
+    ctor.TEMPLATE.replace(RE_TAG_PLACEHOLDER, ensureProp );
+    ctor.TEMPLATE.replace(RE_PLACEHOLDER, ensureProp );
 
     const root = compileTemplate(typeof text === 'string' ? xmlParse(text.trim()) : text);
 
-    assert(SPECIAL_TAGS.indexOf(root.tag) === -1, `${ctor.name}: Root tag cannot be special tag`);
+    assert(SPECIAL_TAGS.indexOf(root.tag) === -1, `${name}: Root tag cannot be special tag`);
 
     const attrs = root.attributes;
     if (attrs) {
 
-      assert(!('each' in attrs), `${ctor.name}: Root tag cannot have 'each' directive`);
-      assert(!('if' in attrs), `${ctor.name}: Root tag cannot have 'if' directive`);
+      assert(!('each' in attrs), `${name}: Root tag cannot have 'each' directive`);
+      assert(!('if' in attrs), `${name}: Root tag cannot have 'if' directive`);
     }
 
     ctor.$TEMPLATE = new Template(root);
     ctor.$HAS_TRANSCLUSION = text.includes('<transclude');
 
-    const key = ctor.hasOwnProperty('NAME') ? ctor.NAME : ctor.name;
-    if (key[0] !== '$') {
+    if (name[0] !== '$') {
 
-      COMPONENTS_TYPES.set(capitalize(key), ctor);
+      COMPONENTS_TYPES.set(capitalize(name), ctor);
     }
   }
 
@@ -259,6 +269,7 @@ export default class Template {
 
   resolve($) {
 
-    return resolveTemplate($, this.root, $.constructor.name);
+    return resolveTemplate($, this.root, $.constructor.NAME);
   }
+
 }

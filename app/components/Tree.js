@@ -5,15 +5,15 @@ export default class Tree extends Component {
 
   static TEMPLATE =`
     <div class="ui list tree">
-        <div each="item of :data" click=":updateOnClick" class="item {{itemClass}}" data-value=":item.id">
+        <div each="item of :data" click="{{updateOnClick}}" class="item {{itemClass}}" data-value="{{item.id}}">
           <i class="icon folder"></i>
           <div class="content">
-            <div class="header">:item.name</div>
-            <div class="description">:item.name</div>
-            <Tree if=":item.children" data=":item.children" valueChanged=":valueChanged"/>
+            <div class="header">{{item.name}}</div>
+            <div class="description">{{item.name}}</div>
+            <Tree if="item.children" data="{{item.children}}" valueChanged="{{valueChanged}}"/>
           </div>
         </div>
-        <small class="empty" if=":isEmpty"><transclude/></small>
+        <small class="empty" if="isEmpty"><transclude/></small>
     </div>`;
 
   static PROPS = {

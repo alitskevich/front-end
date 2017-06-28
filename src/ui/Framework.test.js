@@ -55,7 +55,7 @@ describe('Framework', function () {
 
     const render = bootstrap({
       renderer,
-      markup:`<div version=":version" name=":name"/>`,
+      markup:`<div version="{{version}}" name="{{name}}"/>`,
       state: { version: 'Version', name:'Name' },
       componentTypes: []
     });
@@ -111,7 +111,7 @@ describe('Framework', function () {
 
     const render = bootstrap({
       renderer,
-      markup: `<Valuable props=":meta"/>`,
+      markup: `<Valuable props="{{meta}}"/>`,
       state: {
         meta: {
             value: 1

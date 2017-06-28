@@ -4,7 +4,7 @@
     <Button caption="++" click="{{increment}}"/>
     <Button caption="--" click="{{decrement}}"/>
   </div>
-  <ui:listType data="{{list}}" columns="{{columns}}" value="{{current}}" valueChanged="{{onItemSelected}}"><b>No data for version {{version}}</b></ui:listType>
+  <ui:listType data="{{list}}" columns="{{columns}}" value="{{current}}" valueChanged="{{onItemSelected}}"><b>Count '{{counter}}'</b></ui:listType>
   <p if="current">Selected: {{current}}</p>
   <span>{{counter}}</span>
 </div>

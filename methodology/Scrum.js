@@ -8,7 +8,7 @@ import SoftwareDevelopmentProcess from './SoftwareDevelopmentProcess.js';
 
 export class Scrum extends SoftwareDevelopmentProcess {
 
-  configure() {
+  constructor() {
 
     this.addConcern();
   }

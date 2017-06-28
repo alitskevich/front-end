@@ -13,7 +13,7 @@ const _curry = (fn, args0, lengthLimit) => {
 
 export const isFunction = f => !!(f && f.constructor && f.call && f.apply);
 
-export const functionDisplayName = f => f.displayName ||
+export const functionDisplayName = f => f.hasOwnProperty('displayName') ? f.displayName :
   (f.displayName = f.name || ((/^function\s+([\w\$]+)\s*\(/.exec(f.toString()) || [])[1] || 'C'));
 
 export const log = (...args) =>{

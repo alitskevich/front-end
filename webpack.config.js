@@ -13,39 +13,44 @@ module.exports = {
     {
       test: /\.scss$/,
       use:[
-        {
+         {
           loader: 'style-loader'
-        },
+         },
          {
             loader: 'css-loader'
-          },
-           {
-            loader: 'fast-sass-loader',
-            options:{
-              outputStyle: 'expanded',
-              includePaths:[path.resolve(__dirname, './src/styles')]
-            }
+         },
+         {
+          loader: 'fast-sass-loader',
+          options:{
+            outputStyle: 'expanded',
+            includePaths:[path.resolve(__dirname, './src/styles')]
           }
+        }
 
       ]
     },
     {
       test: /\.html$/,
-      exclude: /(node_modules|vendor)/,
+      exclude: /(node_modules)/,
       loader: 'html-loader'
     },
     {
       test: /\.js$/,
       exclude: /(node_modules)/,
-      loader: 'babel-loader?cacheDirectory=true',
-        query: {
-          presets: ['env'],
-          plugins: [
-            'transform-class-properties',
-            'transform-object-rest-spread'
-          ]
-        }
-
+      use:[
+         {
+          loader: 'babel-loader',
+          options:{
+            cacheDirectory: true,
+            presets: ['env'],
+            plugins: [
+              'transform-runtime',
+              'transform-class-properties',
+              'transform-object-rest-spread'
+            ]
+          }
+         }
+       ]
     }
   ],
   // resolve modules
