@@ -11,16 +11,6 @@ export default class Company {
       this.establishedAt = new Date();
     }
 
-    establish() {
-
-      Object.join(this);
-    }
-
-    hire(record) {
-
-      return this.staff.add(new Employee(record));
-    }
-
     setupProject() {
 
       return new Project();
@@ -36,7 +26,12 @@ export default class Company {
       return new Contract(company, reqiurements, budget, calendar);
     }
 
-    onOpportunityEvent({ company, reqiurements }) {
+    establish() {
+
+      Object.join(this);
+    }
+
+    onRequirementsEvent({ company, reqiurements }) {
 
       const contract = this.negotiate(company, reqiurements);
 

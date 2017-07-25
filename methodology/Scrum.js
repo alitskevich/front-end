@@ -15,11 +15,11 @@ export class Scrum extends SoftwareDevelopmentProcess {
 
   run() {
 
-    while (sprint = this.nextSprint()) {
+    for (const sprint = Sprint.first(); sprint; sprint = sprint.next()) {
 
       sprint.run();
 
-      this.doRetrospective();
+      team.doRetrospective();
 
     }
 

@@ -1,5 +1,4 @@
 import Company from './Company.js';
-
 const COMPANIES = [
   {
     code:'epam',

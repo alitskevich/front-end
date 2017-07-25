@@ -1,7 +1,3 @@
-const BUDGET_TYPES = [
-  { id: 'fixedPrice' },
-  { id: 'Time&Material' }
-];
 
 export default class Budget {
 
