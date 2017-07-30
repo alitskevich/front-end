@@ -4,7 +4,7 @@ export default class MemorySegment {
 
     constructor() {
 
-      const data = new Uint8Array(SIZE);
+      const data = ArrayBuffer(SIZE);
 
       const checkAddr = (address) => {
 

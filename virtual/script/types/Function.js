@@ -1,5 +1,14 @@
 import { $Function, $Tuple, $Map, FUNCTION_PROTOTYPE } from '../_core';
 
+const FUNCTION_PROTOTYPE = NewObject({
+
+  Apply: ExecuteFunction,
+
+  Call: ($, This, ...Arguments) => ExecuteFunction($, This, Arguments),
+
+  Bind: ($, BoundToThis) => NewFunction({ ...$, BoundToThis })
+});
+
 export const FunctionConstructor = $Function({
 
   Body:($) =>{ },
@@ -7,10 +16,5 @@ export const FunctionConstructor = $Function({
   Prototype: FUNCTION_PROTOTYPE,
 
   New(Constructor, defaults, ...Params) {
-
-    const $data = $Map(defaults);
-    const $descr = $Map({ __Proto__: PROTO_DESCRIPTOR });
-
-    return $Tuple(OBJECT, $proto, $descr, $data);
   }
 });

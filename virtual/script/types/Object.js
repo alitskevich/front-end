@@ -29,17 +29,6 @@ const KEY_LOOKUP_SETTER = $String('__lookupSetter__');
 const ToString = ($) => `[${GetProperty($, 'Constructor').name}]`;
 
 export const ObjectPrototype = $Object({
-  __defineGetter__,
-  __defineSetter__,
-  __lookupGetter__,
-  __lookupSetter__,
-  HasOwnProperty,
-  IsPrototypeOf,
-  PropertyIsEnumerable: ($, key) => Read(LookupPropertyDescriptor($, key), KEY_IS_ENUMERABLE),
-
-  ValueOf: ($)=>$,
-  ToLocaleString: ToString,
-  ToString
 
 }, $undefined);
 

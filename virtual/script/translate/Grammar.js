@@ -1,4 +1,4 @@
-export const EXPR_GRAMMAR = `
+export const GRAMMAR = `
 Literal:
   IntegerLiteral
   FloatingPointLiteral
@@ -64,9 +64,6 @@ ConditionalExpression:
 
 Expression:
   AssignmentExpression[ , ]
-
-`;
-export const GRAMMAR = `
 
 Variables:
   let Variable[ , ]
