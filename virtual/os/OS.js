@@ -3,12 +3,12 @@ import Program from './Program.js';
 
 export default class OS {
 
-    constructor(cpu, memory) {
+    constructor(device) {
 
-        this.fs = new FileSystem();
-        this.cpu = cpu;
-        this.memory = memory;
-        this.threads = new Set();
+      this.device = device;
+
+      this.fs = new FileSystem();
+      this.threads = new Set();
     }
 
     boot(program = 'ShellProgram') {
@@ -52,7 +52,7 @@ export default class OS {
 
     }
 
-    executeFromPath(path, params) {
+    executeFile(path, params) {
 
       const code = this.fs.readFile(path);
 

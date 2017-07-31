@@ -11,38 +11,40 @@ export default class Device {
     return device;
   }
 
-  constructor({ MEMORY_SIZE, OPS = _OPS }) {
+  constructor({ MEMORY_SIZE = Math.pow(2,32), OpSet = _OPS }) {
 
-    this.memory = new Memory(MEMORY_SIZE);
+    const storage = ArrayBuffer(MEMORY_SIZE);
+    const memory = new Uint16Array(storage);
+    const registry = new Registry();
 
-    this.cpu = new CPU(this.memory, OPS);
+    const read = ($) => ($<0 ? registry.read($) : memory[$]);
+    const write = ($, V) => { if ($<0){ registry.write($, V); } else { memory[$] = V; } }
+    const next = () =>  memory[registry.IP++];
+
+    const OPS = OpSet({ read, write, next, registry });
+
+    this.reset = () => {
+
+      registry.reset();
+
+      for (let opcode = next(); opcode; opcode = next()) {
+
+        OPS.call(null, opcode);
+      }
+    };
+
   }
 
-  installOs(OsType) {
+  launch(OsType) {
 
-    this.os = new OsType(this.cpu, this.memory);
+    this.os = new OsType(this);
 
-    this.os.device = this;
-
-    return this;
-  }
-
-  launch(program) {
-
-    this.cpu.reset();
-
-    return this.os.boot(program);
+    this.reset();
   }
 
   shutdown() {
 
     this.os.shutdown();
-
-    return this;
   }
 
-  restart(program) {
-
-    return this.shutdown().launch(program);
-  }
 }

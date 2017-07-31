@@ -1,10 +1,10 @@
 // @see https://schweigi.github.io/assembler-simulator/instruction-set.html
-export default ({ REG, cpu, nextIp, read }) => {
+export default ({ next, read, write }) => {
 
-  const OP = nextIp;
-  const R = () => read(nextIp());
-  const ADDR = () => read(nextIp());
-  const REGADDR = () => read(read(read(nextIp())));
+  const OP = next;
+  const R = () => read(next());
+  const ADDR = () => read(next());
+  const REGADDR = () => read(read(read(next())));
 
   const FLAGS = (x) => {
 
@@ -21,6 +21,8 @@ export default ({ REG, cpu, nextIp, read }) => {
 
     return args[args.length - 1];
   };
+
+  const update = (delta) => Object.keys(delta).forEach(addr => { write(addr, delta[addr]); });
 
   const OP_NOT_FOUND = (code) => () => LOG(`Op code not found`, code, {});
   const FUNCTIONS = {
@@ -94,7 +96,7 @@ export default ({ REG, cpu, nextIp, read }) => {
     operands.forEach(opId => {
       const op = OPERANDS[opId];
       const opKey = (opId === 'OP' || opId === 'OP2') ? fnId : `${fnId}_${opId}`;
-      SET[opKey] = ()=> op(fn);
+      SET[opKey] = ()=> update(op(fn));
     });
   };
 
