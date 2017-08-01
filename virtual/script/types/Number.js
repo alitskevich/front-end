@@ -1,50 +1,27 @@
 import { ZERO, TYPE_CODES, $Tuple, $Object, $Function, ObjectPrototype, ValueOf, $NaN, $zero } from './_core.js';
+import {FALSE, TRUE, OBJECT, OBJECT_PRIMITIVE, ROOT, FUNCTION } from '../_core.js';
 
-export const { NUMBER, NUMBER_ZERO, NOT_A_NUMBER } = TYPE_CODES;
+const NUMERIC_PROTOTYPE = OBJECT(ROOT, {
 
-const FIXED_INDEX = 0x0;
-const EXP_INDEX = 0x1;
-const SIGN_INDEX = 0x2;
+    ValueOf($) {
 
-export function FixedValueOf($) {
+      const $p = $.Primitive;
 
-  return ValueOf($, FIXED_INDEX);
-}
+      return (TYPE($p) === TYPE_NUMBER ? 1 : -1) * GET($p, 1) * Math.pow(10, GET($p, 2));
+    },
 
-export function ExponentValueOf($) {
+    ToString: ($) => '' + ValueOf($)
 
-  return ValueOf($, EXP_INDEX);
-}
+});
 
-export const NumberPrototype = $Object({
+export const NumericConstructor = FUNCTION({
 
-  ValueOf($) {
+  Prototype: NUMERIC_PROTOTYPE,
 
-    return ValueOf($, SIGN_INDEX) * FixedValueOf($) * ExponentValueOf($);
-  },
+  NativeCode($, sign, fixed, exp) {
 
-  ToString: ($) => '' + ValueOf($)
+    const type = sign===1 ? TYPE_NUMBER: TYPE_NUMBER_NEGATIVE;
 
-}, ObjectPrototype);
-
-export const NumberConstructor = $Function({
-
-  Body:($) => { },
-
-  Prototype: NumberPrototype,
-
-  New(Constructor, fixed, exp = 0, sign = 1) {
-
-    if (sign === ZERO) {
-
-      return $NaN;
-    }
-
-    if (fixed === ZERO) {
-
-      return $zero;
-    }
-
-    return $Tuple(NUMBER, fixed, exp, sign);
+    $.Primitive = MAKE(type, sign, fixed, exp);
   }
 });

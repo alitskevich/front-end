@@ -1,7 +1,7 @@
 import { $Function, $Object, $Tuple, $undefined, ForEach, Find } from '../_core';
 import { ObjectPrototype } from './Object.js';
 
-const MapPrototype = $Object({
+const MapPrototype = OBJECT({
 
   $Get_Size: ($) => $.Size,
 
@@ -36,11 +36,9 @@ const MapPrototype = $Object({
 
 export const MapConstructor = $Function({
 
-  Body:($) => { },
-
   Prototype: MapPrototype,
 
-  New(Constructor, primitiveValue) {
+  NativeCode(Constructor, primitiveValue) {
 
     return $Tuple(OBJECT, MapPrototype, ...primitiveValue.split());
   }

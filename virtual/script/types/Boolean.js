@@ -1,34 +1,19 @@
-import {
-  $Object,
-  $Function,
-  ObjectPrototype,
-  ValueOf,
-  $true,
-  $false
-} from '../_core.js';
+import {FALSE, TRUE, OBJECT, OBJECT_PRIMITIVE, ROOT, FUNCTION } from '../_core.js';
 
-export const FALSE = SCALAR(TYPE_BOOL, 0);
-export const TRUE = SCALAR(TYPE_BOOL, 1);
+const BOOLEAN_PROTOTYPE = OBJECT(ROOT, {
 
-export function BOOL_OF(V) {
-  return TRULY(V) ? TRUE : FALSE;
-}
-export const BooleanPrototype = $Object({
+  ValueOf: OBJECT_PRIMITIVE,
 
-  ValueOf,
+  ToString: ($) => OBJECT_PRIMITIVE($) === TRUE ? 'true' : 'false'
 
-  ToString: ($) => ValueOf($) ? 'true' : 'false'
+});
 
-}, ObjectPrototype);
+export const BooleanConstructor = FUNCTION({
 
-export const BooleanConstructor = $Function({
+  Prototype: BOOLEAN_PROTOTYPE,
 
-  Body:($) => { },
+  NativeCode($, V) {
 
-  Prototype: BooleanPrototype,
-
-  New(Constructor, primitive) {
-
-    return primitive ? $true : $false;
+    $.Primitive = TRULY(V) ? TRUE : FALSE;
   }
 });
