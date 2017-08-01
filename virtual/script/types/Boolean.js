@@ -1,5 +1,8 @@
 import {FALSE, TRUE, OBJECT, OBJECT_PRIMITIVE, ROOT, FUNCTION } from '../_core.js';
 
+export const FALSE = MAKE(TYPE_BOOL_FALSE);// 0
+export const TRUE = MAKE(TYPE_BOOL_TRUE);// 1
+
 const BOOLEAN_PROTOTYPE = OBJECT(ROOT, {
 
   ValueOf: OBJECT_PRIMITIVE,
@@ -8,12 +11,19 @@ const BOOLEAN_PROTOTYPE = OBJECT(ROOT, {
 
 });
 
-export const BooleanConstructor = FUNCTION({
+export const BooleanConstructor = struct.Object({
 
-  Prototype: BOOLEAN_PROTOTYPE,
+  Proto: FUNCTION_PROTOTYPE,
 
-  NativeCode($, V) {
+  Primitive: struct.Function({
 
-    $.Primitive = TRULY(V) ? TRUE : FALSE;
-  }
+    Name: 'Boolean',
+
+    NewPrototype: BOOLEAN_PROTOTYPE,
+
+    NativeCode($, V) {
+
+      $.Primitive = TRULY(V) ? TRUE : FALSE;
+    }
+  })
 });

@@ -6,12 +6,17 @@ export const STRING_PROTOTYPE = OBJECT(ROOT, {
 
 });
 
-export const StringConstructor = FUNCTION({
+export const StringConstructor = struct.Object({
 
-  Prototype: STRING_PROTOTYPE,
+  Proto: FUNCTION_PROTOTYPE,
 
-  NativeCode(Constructor, chars) {
+  Primitive: struct.Function({
 
-    $.Primitive =  STRING(chars);
-  }
+    NewPrototype: STRING_PROTOTYPE,
+
+    Code(Constructor, chars) {
+
+      $.Primitive = STRING(chars);
+    }
+  })
 });

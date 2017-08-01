@@ -18,7 +18,7 @@ export const NumericConstructor = FUNCTION({
 
   Prototype: NUMERIC_PROTOTYPE,
 
-  NativeCode($, sign, fixed, exp) {
+  Code($, sign, fixed, exp) {
 
     const type = sign===1 ? TYPE_NUMBER: TYPE_NUMBER_NEGATIVE;
 

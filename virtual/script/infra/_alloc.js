@@ -1,25 +1,18 @@
 /**
- * Memory allocation.
+ * Typed Memory allocation.
  *
  * NOTE '$' means address
  */
-
-const BYTES = ArrayBuffer(1024*64);
-const MEMORY = new DataView(BYTES);
 
 // simulation of memory allocation with type and size
 export function ALLOC(type, size, cap = size) {
 
   const capacity = (cap < size) ? size : cap;
-  const byteLength = (4 * (capacity + 1));
 
-  const $ = MEMORY.getInt16(0, type) || 1;
+  const $ = M_ALLOC(capacity+2) + 2;
 
-  MEMORY.setUint8($ + 0, capacity);
-  MEMORY.setUint8($ + 1, size);
-  MEMORY.setInt16($ + 2, type);
-
-  MEMORY.setInt16(0, $ + byteLength)
+  M_SET($ - 1, size);
+  M_SET($ - 2, type);
 
   return $;
 }
@@ -27,48 +20,37 @@ export function ALLOC(type, size, cap = size) {
 // destroys instance allocation and free memory
 export function DESTROY($) {
 
-  if ($ > 0) {
-    MEMORY.setInt16($ + 2, 0);
-  }
+  M_FREE($ - 2);
 }
 
 // returns size of allocated instance
 export function SIZE($) {
 
-  return ($ < 0) ? 0 : MEMORY.getUint8($+1);
+  return M_GET($ - 1);
 }
 
 // returns type code of referred instnce
 export function TYPE($) {
 
-  return ($ < 0) ? $ : MEMORY.getInt16($+2);
+  return M_GET($ - 2);
+}
+
+export function CHECK($, offset) {
+
+  return offset>=0 && offset<SIZE($);
 }
 
 export function GET($, offset) {
 
-  return ($ < 0) ? UNDEFINED : MEMORY.getUint32($ + 4 * (offset + 1));
+  return CHECK($, offset) ? M_GET($ + 2) : -1;
 }
 /**
  * Modify
  */
-export function SET($, offset, val) {
+export function SET($, offset, V) {
 
-  if ($ > 0) {
-    MEMORY.setInt32($ + 4 * (offset + 1), val);
-  }
-}
-
-export function SET16($, offset, num, val) {
-
-  if ($ > 0) {
-    MEMORY.setInt16($ + 4 * (offset + 1) + num, val);
-  }
-}
-
-export function SET64($, offset, val) {
-
-  if ($ > 0) {
-    MEMORY.setInt64($ + 4 * (offset + 1), val);
+  if (CHECK($, offset)) {
+    M_SET($ + offset, V);
   }
 }
 
@@ -90,23 +72,22 @@ export function COPY(size, $s, sOffset, $t, tOffset) {
 export function RESIZE($$, newSize, lag = 0) {
 
   const $ = GET($$, 0)
-  if ($ < 0) {
+  const size = SIZE($);
+
+  if (!CHECK($) || newSize === size) {
     return;
   }
 
-  if (newSize === SIZE($)) {
-    return;
-  }
-
-  let cap = MEMORY.getUint8($);
+  const cap = M_CAP($);
 
   if (cap < newSize) {
     const type = TYPE($)
     const $2 = ALLOC(type, newSize, newSize + lag)
+    M_COPY(SIZE($)+2, $-2, $2-2);
+
     SET($$, 0, $2);
-    COPY(size, $, 0, $2, 0)
   } else {
-    MEMORY.setUint8($+1, newSize)
+    M_SET($-1, newSize)
   }
 }
 
@@ -118,8 +99,22 @@ export function MAKE(type, ...args) {
   const $ = ALLOC(type, size);
 
   for (let i = 0; i < length; i++) {
-    MEMORY.setUint32($+ 4 * (i + 1), args[i]);
+    SET($ + i, args[i]);
   }
 
   return $;
+}
+
+/**
+ * String.
+ */
+export function STRING(S) {
+
+  const size = S && S.length;
+
+  if (size === 0) {
+    return TYPE_STRING_EMPTY;
+  }
+
+  return MAKE(TYPE_STRING, S.split(''));
 }
