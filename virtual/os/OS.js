@@ -1,4 +1,4 @@
-import FileSystem from './filesystem/FileSystem.js';
+import FileSystem from '../filesystem/FileSystem.js';
 import Program from './Program.js';
 
 export default class OS {
