@@ -1,76 +1,22 @@
-
-// Promise is a mean to invoke callbacks BEFORE they are actually defined.
+//                                             -- Tak, soldat, poexali! bystro!
+//                                             -- mashina ne zavodit sa, tovaryshq major 
+//                                             -- Poexali-poexali, potom zavedzosh
+// Promise is like a "time machine" 
+// which allows to use something BEFORE it actually defined.
+// ```(new Promise((handler)=>setTimeout(handler,100))).then(actualHandler)```
 export default class Promise {
-
-  static resolve = v => ensurePromise(v);
-
-  static reject = v => ensurePromise(v, 'reject');
-
-  constructor(performFn) {
-
-    this.handlers = {
-      resolve: (result => {
-        this.alreadyCompleted = { successfully: true, result };
-      }),
-      reject: (error => {
-        this.alreadyCompleted = { error };
-      })
-    };
-
-    performFn(
-      result => this.handlers.resolve(result),
-      error => this.handlers.reject(error)
-    );
-
-  }
-
-  then(resolve, reject = () => 0 ) {
-
-    if (this.alreadyCompleted) {
-
-      const { successfully, result, error } = this.alreadyCompleted;
-
-      return successfully ?
-        ensurePromise(guard(resolve, reject)(result)) :
-        ensurePromise(reject(error), 'reject');
+  constructor(asyncPerformer) {
+    let resolve = (result) => {
+        // DONE-BEFORE-DEFINED: actual `resolve()` will be invoked immediately
+        this.then = (actualResolve) => actualResolve(result)  
     }
-
-    return new Promise((rs, rj) => {
-      this.handlers = {
-        resolve: result => rs(guard(resolve, reject)(result)),
-        reject: error => rj(reject(error))
-      };
-    });
-  }
-}
-
-function isPromise(value) {
-
-  return value && value.then;
-}
-
-function ensurePromise(value, type = 'resolve') {
-
-  if (isPromise(value)) {
-
-    return value;
-  }
-
-  return new Promise(
-    type === 'resolve' ?
-      (resolve, reject) => guard(resolve, reject)(value) :
-      (resolve, reject) => reject(value)
-  );
-}
-
-function guard(resolve, reject) {
-
-  return (result) => {
-    try {
-      return resolve(result);
-    } catch (ex) {
-      return reject(ex);
+    // to define actual callbacks 
+    this.then = (actualResolve) => {
+        // DEFINED-BEFORE-DONE: substitute fake callback with actual ones
+        resolve = actualResolve 
+        // return new Promise() for chaining
     }
-  };
-
+    // run with fake callback, don't wait while actual will be defined
+    asyncPerformer(r=>resolve(r))
+  }
 }

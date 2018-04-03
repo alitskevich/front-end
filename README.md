@@ -4,7 +4,7 @@
 
 ## Resources
 
-Resources below are intended to give very basic overview in the field of modern Front-End Development.
+Resources below are intended to give very basic insight in field of modern Front-End Development.
 
 * [IT background](https://docs.google.com/spreadsheets/d/1gSj_gj_SCEmjsTPEn28-tUWnub2SsFywm72cCuHToMA/pubhtml)
 * [FrontEnd Development](https://docs.google.com/spreadsheets/d/1JE4R3LaB8GO1XmncZc8sxIdcEDkizMySiB83-iMXeyU/pubhtml)
