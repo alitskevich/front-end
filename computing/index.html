@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Front-end • ASM</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css">
+  <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
+</head>
+<script type="text/x-template" id="TodoApp">
+  <ui:fragment>
+    <section class="todoapp">
+      <Header title=":title"/>
+      <ui:fragment ui:if="notEmpty" >
+        <Main data="<- shownItems"/>
+        <Filter current="{{filterId}}">
+          <span class="todo-count"><strong>{{itemsLeft}}</strong> item(s) left</span>
+          <button class="clear-completed" ui:key="right" ui:if="hasCompleted" click="-> purge">Clear completed</button>
+        </Filter>
+      </ui:fragment>
+    </section>
+    <ui:footerType hint=":hint"/>
+  </ui:fragment>
+</script>
+
+<script type="text/x-template" id="Header">
+  <header class="header">
+    <h1>{{title}}</h1>
+    <input type="text" class="new-todo" placeholder=":new_todo_hint" autofocus="true" enter="-> add"/> 
+  </header>
+</script>
+
+<script type="text/x-template" id="Main">
+  <section class="main">
+    <input id="toggle-all" class="toggle-all" type="checkbox" toggle="-> toggle"/>
+    <label for="toggle-all">Mark all as complete</label>
+    <ul class="todo-list">
+      <TodoItem ui:props="{{item}}" ui:each="item of data"/>
+    </ul>
+  </section>
+</script>
+
+<script type="text/x-template" id="Filter">
+  <footer class="footer">
+    <ui:transclude/>
+    <ul class="filters">
+      <li ui:each="filter of :filters">
+        <a class="selected:{{current}}={{filter.id}}" id="{{filter.id}}" href="#{{filter.id}}">{{filter.id|capital}}</a>
+      </li>
+    </ul>
+    <ui:transclude key="right"/>
+  </footer>
+</script>
+
+<script type="text/x-template" id="Attribution">
+  <footer class="info">
+    <p>Created by <a href="https://github.com/alitskevich/dzi-todomvc">alitskevich</a></p>
+    <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+  </footer>
+</script>
+
+<script type="text/x-template" id="Hint">
+  <footer class="info">
+    <p>{{hint}}</p>
+  </footer>
+</script>
+
+<script type="text/x-template" id="TodoItem">
+  <li class="completed:{{completed}} editing:{{editing}}">
+    <div class="view">
+      <input class="toggle" type="checkbox" checked="{{completed}}" data-id="{{id}}" click="-> inverse"/>
+      <label data-editing="true" dblclick="{{assign}}">{{name}}</label>
+      <button ui:if="completed" class="destroy" data-id="{{id}}" click="-> rm"></button>
+    </div>
+    <input type="text" class="edit" value="{{name}}" data-editing="false" data-id="{{id}}" enter="-> save" blur="{{assign}}"/>
+  </li>
+</script>
+
+<body></body>
+<script type="module">
+import { Assembler } from './asm/asm.js'
+import { PHY_DEVICE } from './hardware/device.js'
+import src from './asm/hello.asm.js'
+const asm = new Assembler()
+const DEVICE = new PHY_DEVICE()
+const result = asm.assemble(src, DEVICE.OPCODE)
+console.log(result)
+
+window.onload= ()=>{
+  DEVICE.LAUNCH(result.bytes)
+  for (let i = 0; i < 255; i++) {
+    document.write(String.fromCharCode(DEVICE.R(232+i)))
+  }
+}
+
+</script>
+</html>

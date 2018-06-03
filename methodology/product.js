@@ -1,7 +1,5 @@
-class 	Product {
-	static FIELDS = {
-		id:'string',
-		name:'string',
-		versions:'[]Version'
-	}
+const Product = {
+	id: Id,
+	name: Name,
+	versions: [ProductVersion]
 }
