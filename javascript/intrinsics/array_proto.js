@@ -1,68 +1,68 @@
 const ArrayPrototype = {
   Length: struct.PropertyDescriptor({
-    Get: ($) => LEN($.Value),
-    Set: ($, value) => SET_LEN($.Value, value),
+    Get: (This) => LEN(This.Value),
+    Set: (This, value) => SET_LEN(This.Value, value),
     Enumerable: FALSE,
     Configurable: FALSE
   }),
-  Push: ($, V) => {
-    ARR_PUSH($.Value, value);
+  Push: (This, V) => {
+    ARR_PUSH(This.Value, value);
   },
-  ForEach($, fn) {
-    const len = LEN($.Value);
+  ForEach(This, fn) {
+    const len = LEN(This.Value);
     for (let index = 0; index < len; index++) {
-      APPLY(fn, NULL, ARR_AT($, index), index, $);
+      APPLY(fn, NULL, ARR_AT(This, index), index, This);
     }
   },
-  Reduce($, fn, initialValue) {
-    const len = LEN($.Value);
+  Reduce(This, fn, initialValue) {
+    const len = LEN(This.Value);
     let result = initialValue;
     for (let index = 0; index < len; index++) {
-      result = APPLY(fn, NULL, result, ARR_AT($, index), index, $);
+      result = APPLY(fn, NULL, result, ARR_AT(This, index), index, This);
     }
     return result;
   },
-  Map($, fn) {
-    const len = LEN($.Value);
+  Map(This, fn) {
+    const len = LEN(This.Value);
     const result = ARR(len);
     for (let index = 0; index < len; index++) {
-      const item = ARR_AT($, index)
-      ARR_PUSH(result, APPLY(fn, NULL, item, index, $));
+      const item = ARR_AT(This, index)
+      ARR_PUSH(result, APPLY(fn, NULL, item, index, This));
     }
     return ARRAY(result);
   },
-  Filter($, fn) {
-    const len = LEN($.Value);
+  Filter(This, fn) {
+    const len = LEN(This.Value);
     const result = ARR(len);
     for (let index = 0; index < len; index++) {
-      const item = ARR_AT($, index)
-      if (TO_BOOLEAN(APPLY(fn, NULL, item, index, $))===TRUE){
+      const item = ARR_AT(This, index)
+      if (TO_BOOLEAN(APPLY(fn, NULL, item, index, This))===TRUE){
         ARR_PUSH(result, item);
       }
     }
     return ARRAY(result);
   },
-  IndexOf($, X) {
-    const len = LEN($.Value)
+  IndexOf(This, X) {
+    const len = LEN(This.Value)
     const result = ARR(len)
     for (let index = 0; index < len; index++) {
-      const item = ARR_AT($, index)
+      const item = ARR_AT(This, index)
       if (EQUAL(item, X)) {
         return index;
       }
     }
     return UNDEFINED;
   },
-  Join($, sep = '') {
-    const len = LEN($.Value)
+  Join(This, sep = '') {
+    const len = $$ARR_LEN(This.Value)
     let result = '';
     for (let index = 0; index < len; index++) {
-      const item = ARR_AT($, index);
+      const item = ARR_AT(This, index);
       result += (index ? sep : '') + TO_STRING(item);
     }
     return STR(result)
   },
-  ToString($) {
-    return CALL_METHOD($, 'Join', ', ');
+  ToString(This) {
+    return $$CALL_METHOD(This, 'Join', ', ');
   }
 };

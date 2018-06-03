@@ -23,7 +23,7 @@ function MAIN(HostDefined, Source, ...Args) {
     ...$$TRANSLATE(Source)
   })
   // evaluate main. the global object as This
-  $$CODE_APPLY(Main, $$OBJ_MAKE(Vars), Args)
+  $$CODE_APPLY(Main, $$OBJECT(Vars), Args)
 }
 
 const JSRuntime = new Program({

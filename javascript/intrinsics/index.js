@@ -38,7 +38,7 @@ const ConstructorsNames = [
   'WeakMap',
   'WeakSet'
 ];
-export default {
+const registry = {
   //The Reflect object
   Reflect: REFLECT,
   // The eval function (18.2.1)
@@ -287,7 +287,7 @@ function CreateGlobalObject(Realm) {
   
     return Apply(fn);
   };
-  const GlobalObject = {
+  const Intrinsics = {
 
     // Non-equal to anything including itself
     // NaN: createConst(Intrinsics.NaN),
@@ -318,10 +318,7 @@ function CreateGlobalObject(Realm) {
     // JSON: MakeObject(Intrinsics.JSON),
     // Math: MakeObject(Intrinsics.Math),
     Reflect: MakeObject(Intrinsics.Reflect),
-
     ...Constructors,
-
-    ...HostDefined
   };
 
   Realm.GlobalObject = GlobalObject;

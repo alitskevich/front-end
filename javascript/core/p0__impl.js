@@ -1,15 +1,19 @@
 /**
- * Underlying internals:
+ * Underlying internals simulation:
  */
 const $$STRING = (s) => s
+
 const $$STRUCT = (def) => e => e
 const $$STRUCT_ASSIGN = (s, delta) => Object.assign(s, delta)
+
 const $$HASH = (e) => e || {}
 const $$HASH_KEYS = (e) => Object.keys(e)
 const $$HASH_HAS_KEY = (e, key) => (key in e)
 const $$HASH_GET = (e, key) => e[key]
 const $$HASH_PUT = (e, key, val) => {e[key]=val}
+
 const $$ARRAY = () => []
+const $$ARR_LEN = (a, e) => a.length
 const $$ARRAY_INDEX_OF = (a, e) => a.indexOf(e)
 const $$ARRAY_CONCAT = (a, a1) => a.concat(a1)
 

@@ -80,7 +80,7 @@ function $$THROW(Err = 0) {
 }
 
 function $$ASSERT(F, Err) {
-  if (F) {
+  if (!F) {
     $$THROW(Err)
   }
 }
