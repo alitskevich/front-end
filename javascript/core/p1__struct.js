@@ -66,6 +66,8 @@ const struct = {
     Scope: `struct.VariableScope`,
     Line: `int`,
     Error: `struct.Ref`,
-    Result: `struct.Ref`
+    Result: `struct.Ref`,
+    This: `struct.Ref`,
+    Args: `[]struct.Ref`
   })
 }

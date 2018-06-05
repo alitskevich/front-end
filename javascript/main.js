@@ -4,15 +4,9 @@
 function MAIN(HostDefined, Source, ...Args) {
 
   // global variables
-  const Vars = HASH({ 
-    ...Intrinsics, 
-    ...HostDefined 
-  })
+  const Vars = { ...Intrinsics, ...HostDefined }
   // global scope
-  const Scope = struct.VariableScope({ 
-    Vars, 
-    Outer: UNDEFINED 
-  })
+  const Scope = struct.VariableScope({ Vars, OuterScope: UNDEFINED })
   // global context
   $$STACK_PUSH(struct.ExecutionContext({ Scope }))
   // global functional block
@@ -23,7 +17,7 @@ function MAIN(HostDefined, Source, ...Args) {
     ...$$TRANSLATE(Source)
   })
   // evaluate main. the global object as This
-  $$CODE_APPLY(Main, $$OBJECT(Vars), Args)
+  $$CODE_APPLY(Main, $$OBJ(Vars), Args)
 }
 
 const JSRuntime = new Program({

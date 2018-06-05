@@ -1,7 +1,7 @@
-const $$PROP = ((Getter, Setter) => {
+const $$PROPERTY = ((Getter, Setter) => {
   return (Value) => struct.PropertyDescriptor({
-    Value,
-    Getter, Setter,
+    Value, 
+    Getter, Setter, 
     Writable, Enumerable, Configurable: TRUE
   })
 })((This, Prop) => Prop.Value, (This, Prop, Value) => { Prop.Value = Value })
@@ -11,9 +11,13 @@ const $$PROP = ((Getter, Setter) => {
  */
 const $$REFLECT = HASH({
   // prototype access
-  GetPrototypeOf: This => This.Proto,
-  SetPrototypeOf: (This, Value) => (This.Proto = Value),
-
+  GetPrototypeOf(This){
+    return This.Proto
+  },
+  SetPrototypeOf(This, Value){
+    This.Proto = Value
+  },
+  // properties access
   IsExtensible(This){
     return This.Extensible
   },
@@ -49,7 +53,16 @@ const $$REFLECT = HASH({
       return
     }
     ASSERT(This.Extensible, `Property '${Key}' is not extensible`);
-    This.Props[Key] = $$PROP(value);
+    This.Props[Key] = $$PROPERTY(value);
+  },
+  // evaluation:
+  // Calls a target function with arguments as specified by the args parameter.
+  Apply(This, ThisArg, Arguments) {
+    $$THROW(`TypeError: ${This} is not a function`);
+  },
+  // The new operator as a function. Equivalent to calling new target(...args).
+  Construct(This, Arguments) {
+    $$THROW(`TypeError: ${This} is not a constructor`);
   },
   // ---------------------------------
   // private, to be used in $$OBJ_ROOT
@@ -79,7 +92,7 @@ const $$REFLECT = HASH({
     return UNDEFINED;
   },
   __DefineGetter__(This, Key, fn) {
-    const Prop = HASH_GET(This.Props, Key)
+    const Prop = This.Props[Key]
     if (Prop) {
       Prop.Getter = fn;
     } else {
@@ -91,7 +104,7 @@ const $$REFLECT = HASH({
     }
   },
   __DefineSetter__(This, Key, fn) {
-    const Prop = HASH_GET(This.Props, Key)
+    const Prop = This.Props[Key]
     if (Prop) {
       Prop.Setter = fn;
     } else {
@@ -108,21 +121,6 @@ const $$REFLECT = HASH({
   // string representation with locale
   __ToLocaleString__: This => This.Reflect.__ToString__(This),
 })
-
-const $$REFLECT_FUNCTION = struct.Reflect({
-  ...$$REFLECT,
-  // Calls a target function with arguments as specified by the args parameter.
-  Apply(This, ThisArg, Arguments) {
-    return $$CODE_APPLY(This.Exotic, ThisArg, Arguments);
-  },
-  // The new operator as a function. Equivalent to calling new target(...args).
-  Construct(This, Arguments) {
-    const $new = $$OBJECT({}, This.Exotic.Prototype);
-    $$CODE_APPLY(This.Exotic, $new, Arguments);
-    return $new;
-  }
-})
-
 /**
  * This is the default root object for entire object tree.
  * Has no proto.
@@ -143,35 +141,36 @@ const $$ROOT = struct.Object({
       Configurable: FALSE
     }),
     // check if given X is prototype of This
-    IsPrototypeOf: $$PROP((This, X) => This.Reflect.__IsPrototypeOf__(This,X)),
+    IsPrototypeOf: $$PROPERTY((This, X) => This.Reflect.__IsPrototypeOf__(This,X)),
     // returns object value
-    ValueOf: $$PROP(This => This.Reflect.__ValueOf__(This)),
+    ValueOf: $$PROPERTY(This => This.Reflect.__ValueOf__(This)),
     // string representation
-    ToString: $$PROP(This => This.Reflect.__ToString__(This)),
+    ToString: $$PROPERTY(This => This.Reflect.__ToString__(This)),
     // string representation with locale
-    ToLocaleString: $$PROP(This => This.Reflect.__ToLocaleString__(This)),
+    ToLocaleString: $$PROPERTY(This => This.Reflect.__ToLocaleString__(This)),
     // check if given property is defined by object itself(no prototype chain)
-    HasOwnProperty: $$PROP((This, Key) => This.Reflect.Has(This, Key)),
+    HasOwnProperty: $$PROPERTY((This, Key) => This.Reflect.Has(This, Key)),
     // check if given property is enumerable
-    PropertyIsEnumerable: $$PROP((This, Key) => This.Reflect.__PropertyIsEnumerable__(This, Key)),
+    PropertyIsEnumerable: $$PROPERTY((This, Key) => This.Reflect.__PropertyIsEnumerable__(This, Key)),
     // getters/setters access
-    __LookupGetter__: $$PROP((This, Key) => This.Reflect.__LookupGetter__(This, Key)),
-    __LookupSetter__: $$PROP((This, Key) => This.Reflect.__LookupSetter__(This, Key)),
-    __DefineGetter__: $$PROP((This, Key, Fn) => This.Reflect.__DefineGetter__(This, Key, Fn)),
-    __DefineSetter__: $$PROP((This, Key, Fn) => This.Reflect.__DefineSetter__(This, Key, Fn))
+    __LookupGetter__: $$PROPERTY((This, Key) => This.Reflect.__LookupGetter__(This, Key)),
+    __LookupSetter__: $$PROPERTY((This, Key) => This.Reflect.__LookupSetter__(This, Key)),
+    __DefineGetter__: $$PROPERTY((This, Key, Fn) => This.Reflect.__DefineGetter__(This, Key, Fn)),
+    __DefineSetter__: $$PROPERTY((This, Key, Fn) => This.Reflect.__DefineSetter__(This, Key, Fn))
   })
 })
 
-const $$OBJECT = (KeyValues, Proto, Reflect, Extensible) => {
-  const Props = HASH({})
+const $$OBJ = (KeyValues, Proto, Reflect, Extensible, Exotic) => {
+  const Props = {}
   for (let Key in KeyValues) {
-      Props[Key] = $$PROP_MAKE(KeyValues[Key])
+      Props[Key] = $$PROPERTY(KeyValues[Key])
   }
   return struct.Object({
       Props,
       Proto: Proto || $$ROOT,
       Reflect: Reflect || $$REFLECT,
       Extensible: Extensible || TRUE,
-      Exotic: UNDEFINED
+      Exotic: Exotic || UNDEFINED
   })
 }
+

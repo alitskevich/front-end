@@ -10,7 +10,7 @@ import { apply as applyEventBus } from './EventBus.js';
  *  - has life-cycle 'init' and 'done'
  *  - enables unified event-driven interaction between modules
  */
-const application = {
+const application = applyEventBus({
 
   init(modulesConfig) {
 
@@ -26,8 +26,6 @@ const application = {
       .all(modules.filter(m => isFunction(m.init)).map(m => m.init()))
       .then(() => application);
   }
-};
-
-applyEventBus(application);
+});
 
 export default application;

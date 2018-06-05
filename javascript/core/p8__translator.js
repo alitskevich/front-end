@@ -1,40 +1,22 @@
 import { FUNCTION } from '../operations/instantiation';
 import { ASSIGN_VAR } from '../operations/variables';
-
 const acorn = require("acorn")
 const walk = require("acorn/dist/walk");
-
-/**
- * parse source into AST
- * @param Source
- * @param Fn
- */
-export function parse(Source) {
-  return typeof Source === 'object' ? Source : acorn.parse(Source, {
-    // collect ranges for each node
-    // ranges: true,
-    // collect comments in Esprima's format
-    // onComment: comments,
-    // collect token ranges
-    // onToken: tokens
-  });
-}
-
 /**
  *
  * @see https://github.com/ternjs/acorn
  *
  * @param Source
- * @param Fn
+ * @param ParamsNames
  * @returns {*}
  */
-export function TRANSLATE(Source, ParamsNames) {
+export function $$TRANSLATE(Source, ParamsNames) {
 
   var LocalVariables = [];
-  let Parameters = [];
-  let Statements = [];
+  let ExternalNames = [];
+  let CompiledCode = [];
 
-  var ast = parse(Source);
+  var ast = acorn.parse(Source);
 
   walk.recursive(ast, {}, {
     VariableDeclarator(n) {
@@ -52,8 +34,7 @@ export function TRANSLATE(Source, ParamsNames) {
       c(n.body, state);
     },
     AssignmentExpression(n, state, c) {
-
-      // Statements.push(() => API.ASSIGN(name, fn));
+      Statements.push(() => VAR_SET(n.id.name, fn));
       c(n.left, state);
     },
     MemberExpression(n, state, c) {
@@ -68,14 +49,10 @@ export function TRANSLATE(Source, ParamsNames) {
     }
   });
 
-  const Code = () => {
-    Statements.forEach(st => st.apply())
-  }
-
-  return Object.assign(Fn, { LocalVariables, Parameters, Code });
+  return {LocalNames, ExternalNames, CompiledCode };
 }
 
-export function compileTryCatch(Try, Catch, Finally) {
+function compileTryCatch(Try, Catch, Finally) {
 
   const context = ApplyFunction(Try);
 
