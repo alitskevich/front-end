@@ -1,49 +1,44 @@
-
 // Object
-function TO_OBJECT (V) {
-  if (V === UNDEFINED || V === NULL) {
-      return $$THROW(`TypeError:Cannot convert undefined or null to object`);
+const TO_OBJECT = (Ref) => {
+  if (Ref === UNDEFINED || Ref === NULL) {
+    return $$THROW(`TypeError: Cannot convert undefined or null to object`);
   }
-  switch (TYP(V)) {
-      case TYPE_OBJECT:
-        return V
-      case TYPE_STRING:
-        return new String(V)
-      case TYPE_NUMBER, TYPE_NOT_A_NUMBER:
-        return new Number(V)
+  // from primitives
+  switch (Ref.Type) {
+    case TYPE_STRING:
+      return StringConstructor.Reflect.Construct(StringConstructor, Ref)
+    case TYPE_SYMBOL:
+      return SymbolConstructor.Reflect.Construct(SymbolConstructor, Ref)
+    case TYPE_NUMBER, TYPE_NOT_A_NUMBER:
+      return NumberConstructor.Reflect.Construct(NumberConstructor, Ref)
   } 
+  return Ref
 }
 
-const OBJ_ACCESS = ($) => TO_OBJECT($).Reflect
-
-const PROP_GET = ($, key) => {
-  if ($ === UNDEFINED || $ === NULL) { 
-    THROW(`TypeError:Cannot read property '${key}' of ${TO_STRING($)}`)
-  } else {
-    return OBJ_ACCESS($).Get($, key);
-  }
+// Properties access
+const PROP_GET = (Ref, key) => {
+  $$ASSERT(Ref !== UNDEFINED && Ref !== NULL, `TypeError: Cannot read property '${key}' of ${TO_STRING(Ref)}`)
+  return TO_OBJECT(Ref).Reflect.Get(Ref, key);
 }
-const PROP_SET = ($, key, value) => {
-  if ($ === UNDEFINED || $ === NULL) {
-    THROW(`TypeError:Cannot set property '${key}' of ${TO_STRING($)}`)
-  } else {
-    return OBJ_ACCESS($).Set($, key, value)
-  }
+const PROP_SET = (Ref, key, value) => {
+  $$ASSERT(Ref !== UNDEFINED && Ref !== NULL, `TypeError:Cannot set property '${key}' of ${TO_STRING(Ref)}`)
+  return TO_OBJECT(Ref).Reflect.Set(Ref, key, value)
 }
-const PROP_DEL = ($, key) => OBJ_ACCESS($).DeleteProperty($obj, key)
-
+const PROP_DEL = (Ref, key) => {
+  $$ASSERT(Ref !== UNDEFINED && Ref !== NULL, `TypeError:Cannot delete property '${key}' of ${TO_STRING(Ref)}`)
+  TO_OBJECT(Ref).Reflect.DeleteProperty(Refobj, key)
+}
 
 // Functions
-
-const APPLY_FUNCTION = ($, This, Arguments) => OBJ_ACCESS($).Apply($, This, Arguments)
+const APPLY_FUNCTION = (Ref, This, Arguments) => TO_OBJECT(Ref).Reflect.Apply(Ref, This, Arguments)
 const APPLY_METHOD = (This, Name, ...Args) => APPLY_FUNCTION(GET_PROP(This, Name), This, Args)
-const NEW = ($, ...args) => OBJ_ACCESS($).Construct($, args);
+const NEW = (Ref, ...args) => TO_OBJECT(Ref).Reflect.Construct(Ref, args);
 
 // Booleans
 
 // used in conditional clauses, logical operations
-function TO_BOOLEAN(V) {
-  return V.Value === 0;
+function TO_BOOLEAN(Ref) {
+  return Ref.Value === 0x0;
 }
 
 // arithimetic
@@ -53,12 +48,10 @@ function TO_NUMBER (val) {
 }
 // number primitive. Does not allocate heap memory.
 const NUMBER = (coef, exp = 0, neg=0) => {
-  return struct.Variable({ Type: TYPE_NUMBER, Value: neg & 0x8000 | exp & 0x7FFF, coef})
+  return struct.Variable({ Type: TYPE_NUMBER, Value: [ neg & 0x8000 | exp & 0x7FFF, coef ]})
 }
 const PLUS = (a, b) => a + b;
 const MINUS = (a, b) => a - b;
-const EQUAL = (a, b) => a === b
-
 
 // Strings
 
@@ -67,41 +60,68 @@ const STR_FALSE= STR('false')
 // used in string operations (concat, slice) etc.
 const STR = (S) => struct.Variable({Type: TYPE_STRING, Value: S });
 
-function TO_STRING (V) {
-  switch (V.Type) {
-    case TYPE_OBJECT:
-      return APPLY_METHOD(V, 'ToString')
+function TO_STRING (Ref) {
+  switch (Ref.Type) {
+    case TYPE_OBJECT, TYPE_NUMBER, TYPE_SYMBOL:
+      return APPLY_METHOD(Ref, 'ToString')
     case TYPE_STRING:
-      return V
+      return Ref
     case TYPE_BOOLEAN:
-      return V === FALSE ? STR_FALSE : STR_TRUE
+      return Ref.Value === FALSE ? STR_FALSE : STR_TRUE
   }
   return STR(``+N);
 }
 
-function EQUALS2 (A, B) {
+function TO_PRIMITIVE(Ref) {
+  return Ref.Type === TYPE_OBJECT ? V.Value.Exotic : Ref.Value;
+}
+/**
+ * Comparisions
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness
+ * 
+ */
+function LOOSE_EQUALS(A, B) {
+  if (A === UNDEFINED || A === NULL) {
+    return B === UNDEFINED || B === NULL
+  }
+  if (A.Type === B.Type) {
+    return STRICT_EQUALS (A, B)
+  }
   switch (A.Type) {
     case TYPE_OBJECT:
-      B = TO_OBJECT(B)
+      A = TO_PRIMITIVE(A)
     case TYPE_STRING:
-      B = TO_STRING(B)
-    case TYPE_NUMBER:
-      B = TO_NUMBER(B)
+      A = B.Type===TYPE_STRING ? A : TO_NUMBER(A)
+    case TYPE_BOOLEAN:
+      A = B.Type===TYPE_BOOLEAN ? A : TO_NUMBER(A)
   }
-  return EQUALS3 (A, B);
+  // mirror for B
+  switch (B.Type) {
+    case TYPE_OBJECT:
+      B = TO_PRIMITIVE(B)
+      case TYPE_STRING:
+      B = A.Type===TYPE_STRING ? B : TO_NUMBER(B)
+    case TYPE_BOOLEAN:
+      B = A.Type===TYPE_BOOLEAN ? A : TO_NUMBER(B)
+  }
+  return STRICT_EQUALS (A, B);
 }
 
-function EQUALS3 (A, B) {
+function STRICT_EQUALS (A, B) {
   if (A.Type !== B.Type) {
     return FALSE
   }
-  switch (A.Type) {
-    case TYPE_OBJECT:
-      return A===B
-    case TYPE_STRING:
-      return STR_EQUALS(A, B)
-    case TYPE_NUMBER:
-      return NUM_EQUALS(A, B)
+  if (A === UNDEFINED) {
+    return B === UNDEFINED
   }
-  return A===B;
+  if (A === NULL) {
+    return B === NULL
+  }
+  if (A === NOT_A_NUMBER) {
+    return FALSE
+  }
+  if (A.Type === TYPE_NUMBER) {
+    return A === B /*numeric*/
+  }
+  return A.Value === B.Value; //
 }

@@ -11,7 +11,7 @@ const $$CODE = (Name, ParamsNames, Source, BoundThis) => {
     Name,
     BoundThis,
     // INSIGHT: here and now keep current variable scope 
-    // to be used as outer for new variable scopes at APPLY()
+    // to be used at APPLY() as an outer scope
     Closure: OutersNames.length == 0 ? UNDEFINED : STACK[0].Scope,
     // translated 
     LocalNames, ParamsNames, ExternalNames, CompiledCode
@@ -31,7 +31,7 @@ const $$VAR_SCOPE = (Code, Args)=> {
     Vars[name] = struct.Variable({ Ref: UNDEFINED })
   }
   return struct.VariableScope({
-    // INSIGHT: here and now function closure became outer scope for this variable scope
+    // INSIGHT: here and now function closure became outer scope for current variable scope
     Outer: Code.Closure,
     Vars,
   })
@@ -91,6 +91,7 @@ function $$VAR_LOOKUP(name) {
   }
   $$THROW(`ReferenceError: Variable is not defined: ${name}`);
 }
+
 // Variables access
 const VAR_GET = (name) => $$VAR_LOOKUP(name).Ref
 const VAR_SET = (name, Value) => { return $$VAR_LOOKUP(name).Ref = Value }

@@ -1,7 +1,6 @@
 /**
- * Internal JS data structures:
+ * Internal JS specification structures:
  */
-
 const struct = {
   // reference to any typed value
   Ref: $$STRUCT({
@@ -12,7 +11,7 @@ const struct = {
   }),
   // object
   Object: $$STRUCT({
-    // hashed key/descriptor pairs that constitute object state
+    // hash of key/prop_descriptor pairs that constitute object state
     Props: `HASH<string, struct.PropertyDescriptor>`,
     // flag to set if object is able to add new keys
     Extensible: `bool`,
@@ -20,12 +19,16 @@ const struct = {
     Proto: `struct.Object`,
     // set of methods to access to the object instance. May be changed for objects like Proxy.
     Reflect: `struct.Reflect`,
-    // May refer to specific structures used for `exotic` objects like Function, Array, Number etc
+    // May refer to specific class name
+    ClassName: '*',
+    // May refer to specific structures used for `exotic` objects like internal Function, Array, Number etc
     Exotic: '*'
   }),
   // to hold and resolve variables by name with chaining
   VariableScope: $$STRUCT({
+    // to resolve Externals
     OuterScope: `struct.VariableScope`,
+    // own variables: Params and Locals
     Vars: `HASH<string, struct.Variable>`
   }),
   // to hold variable ref
@@ -38,8 +41,8 @@ const struct = {
     // Value
     Value: `struct.Variable`,
     // for accessor property:
-    Getter: `CODE:(This, p) => p.Value`,
-    Setter: `CODE:(This, p, value) => (p.Value = value)`,
+    Get: `CODE:(This, p) => p.Value`,
+    Set: `CODE:(This, p, value) => (p.Value = value)`,
     // flags:
     Writable: `bool`,
     Enumerable: `bool`,

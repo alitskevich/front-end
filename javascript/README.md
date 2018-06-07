@@ -1,9 +1,7 @@
 # js-on-js
-JavaScript written in JavaScript
 
-This contains simplified Javascript implementation written in JavaScript.
-
-It is intended to be a source of truth for getting instant and deep understanding what JS is from its roots.
+Simplified implementation of JavaScript runtime written in JavaScript itself.
+It may be considered as a source of truth giving instant and deep understanding of JS core.
 
 ## See also
 

@@ -1,6 +1,7 @@
 /**
- * There are several global constants:
+ * There are several global language constants:
  */
+
 // DENOTES FULL SET
 const UNDEFINED = struct.Ref({ Type: TYPE_UNDEFINED, Value: 0x0 });
 // DENOTES EMPTY SET 
