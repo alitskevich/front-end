@@ -47,7 +47,7 @@
     <ui:transclude/>
     <ul class="filters">
       <li ui:each="filter of :filters">
-        <a class="selected:{{current}}={{filter.id}}" id="{{filter.id}}" href="#{{filter.id}}">{{filter.id|capital}}</a>
+        <a class="selected:{{current}}=={{filter.id}}" id="{{filter.id}}" href="#{{filter.id}}">{{filter.id|capital}}</a>
       </li>
     </ul>
     <ui:transclude key="right"/>

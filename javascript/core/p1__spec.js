@@ -55,18 +55,23 @@ const struct = {
     // list of variables names: parameters, locals variables, external variables from outer scope
     ParamsNames, LocalsNames, OutersNames: `ARRAY<string>`,
     // array of compiled operations
-    CompiledOperations: `*`,
+    CompiledOperations: `Array[NativeOperation]`,
     // source body string
     Body: `string`,
     // bound `this` to be used at invocation disregard passed outside
     BoundThis: `*`,
     // INSIGHT: initialized with current variable scope at creation
     // to be parent for a new variable scope at Apply()
-    Closure: `struct.VariableScope`
+    Closure: `struct.VariableScope`,
+    // optional error catch block
+    Catch: `struct.Code`,
+    // optional finally block
+    Finally: `struct.Code`
   }),
   // item of call stack
   ExecutionContext: $$STRUCT({
     Scope: `struct.VariableScope`,
+    Code: `struct.Code`,
     Line: `int`,
     Error: `struct.Ref`,
     Result: `struct.Ref`,

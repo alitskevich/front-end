@@ -73,7 +73,7 @@ function TO_STRING (Ref) {
 }
 
 function TO_PRIMITIVE(Ref) {
-  return Ref.Type === TYPE_OBJECT ? V.Value.Exotic : Ref.Value;
+  return Ref.Type === TYPE_OBJECT ? V.Value.Exotic : Ref;
 }
 /**
  * Comparisions
@@ -100,9 +100,9 @@ function LOOSE_EQUALS(A, B) {
     case TYPE_OBJECT:
       B = TO_PRIMITIVE(B)
       case TYPE_STRING:
-      B = A.Type===TYPE_STRING ? B : TO_NUMBER(B)
+      B = A.Type === TYPE_STRING ? B : TO_NUMBER(B)
     case TYPE_BOOLEAN:
-      B = A.Type===TYPE_BOOLEAN ? A : TO_NUMBER(B)
+      B = A.Type === TYPE_BOOLEAN ? A : TO_NUMBER(B)
   }
   return STRICT_EQUALS (A, B);
 }

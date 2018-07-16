@@ -14,7 +14,8 @@ function MAIN(HostDefined, Source, ...Args) {
     Name: 'main',
     // to be root for any variable scope
     Closure: Scope,
-    ...$$TRANSLATE(Source)
+    ...$$TRANSLATE(Source),
+    Catch: [()=> console.error($$ARGS[0])]
   })
   // evaluate main. the global object as This
   $$CODE_APPLY(Main, $$OBJ(Vars), Args)

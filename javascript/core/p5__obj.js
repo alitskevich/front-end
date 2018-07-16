@@ -2,7 +2,7 @@ const __PROPERTY = ((Get, Set) => {
   return (Value) => struct.PropertyDescriptor({
     Value, 
     Get, Set, 
-    Writable, Enumerable, Configurable: TRUE
+    Writable, Enumerable, Configurable: true
   })
 })((This, Prop) => Prop.Value, (This, Prop, Value) => { Prop.Value = Value })
 
@@ -28,7 +28,7 @@ const $$REFLECT = {
     return This.Extensible
   },
   PreventExtensions(This) {
-     This.Extensible = FALSE 
+     This.Extensible = false 
   },
   DefineProperty(This, Key, Initials) {
     const Prop = This.Props[Key]
@@ -38,9 +38,7 @@ const $$REFLECT = {
   OwnKeys: (This) => Object.keys(This.Props),
   GetOwnPropertyDescriptor: (This, Key) => This.Props[Key],
   DeleteProperty: (This, Key) => { delete This.Props[Key] },
-  Has(This, Key) {
-    return __PROPERTY_LOOKUP(This, Key) === UNDEFINED ? FALSE : TRUE
-  },
+  Has: (This, Key) => __PROPERTY_LOOKUP(This, Key) !== UNDEFINED,
   Get(This, Key) {
     const Prop = __PROPERTY_LOOKUP(This, Key)
     return Prop === UNDEFINED ? UNDEFINED : Prop.Get(This, Prop)
@@ -73,7 +71,7 @@ const $$REFLECT = {
 const $$ROOT = struct.Object({
   Exotic: UNDEFINED,
   Proto: NULL,
-  Extensible: FALSE,
+  Extensible: false,
   Reflect: $$REFLECT,
   Props: Hash({
     // despite root itself has no proto, 
@@ -96,7 +94,7 @@ const $$ROOT = struct.Object({
     // check if given property is enumerable
     PropertyIsEnumerable: __PROPERTY((This, Key) => {
       const Prop = __PROPERTY_LOOKUP(This, Key)
-      return Prop === UNDEFINED ? FALSE : Prop.Enumerable;
+      return Prop !== UNDEFINED && Prop.Enumerable;
     }),
     // getters/setters access
     __LookupGetter__: __PROPERTY((This, Key) => {
@@ -114,7 +112,7 @@ const $$ROOT = struct.Object({
         Prop.Get = fn;
       } else {
         This.Props[Key] = struct.PropertyDescriptor({ 
-          Get: fn, IsEnumerable: TRUE, IsConfigurable: TRUE 
+          Get: fn, IsEnumerable: true, IsConfigurable: true 
         })
       }
     }),
@@ -125,16 +123,16 @@ const $$ROOT = struct.Object({
         Prop.Set = fn;
       } else {
         This.Props[Key] = struct.PropertyDescriptor({ 
-          Set: fn, IsEnumerable: TRUE, IsConfigurable: TRUE 
+          Set: fn, IsEnumerable: true, IsConfigurable: true 
         })
       }
     }),
     // check if given X is prototype of This
     IsPrototypeOf: __PROPERTY((This, X) => { 
       for (let target = This.Proto; target; target = target.Proto) if (X === target) {
-          return TRUE;
+          return true;
       }
-      return FALSE;
+      return false;
     })
   })
 })

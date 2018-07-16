@@ -40,7 +40,7 @@ const $$VAR_SCOPE = (Code, Args)=> {
 // Apply a function with given target and arguments
 function $$APPLY(Code, This = UNDEFINED, Args = []) {
   // create a new execution context
-  const Ctx = struct.ExecutionContext({ 
+  let Ctx = struct.ExecutionContext({ 
     Error: UNDEFINED,
     Return: UNDEFINED,
     Line: 0x0,
@@ -50,12 +50,26 @@ function $$APPLY(Code, This = UNDEFINED, Args = []) {
   })
 
   $$STACK_PUSH(Ctx)
-  // evaluate code
-  for (let Length = Code.CompiledOperations.length; Ctx.Line >=0x0 && Ctx.Line < Length; Ctx.Line++) {
+  
+  for (let Length = Code.CompiledOperations.length; Ctx.Line >= 0x0 && Ctx.Line < Length; Ctx.Line++) {
     Code.CompiledOperations[Ctx.Line]()
   }
-  // pop stack and return result
-  return $$STACK_POP()
+
+  Ctx = $$STACK_POP()
+
+  if (Ctx.Error) {
+    if (Code.Catch) {
+      return $$APPLY(Code.Catch, This, [Ctx.Error])
+    } else {
+      $$THROW(Ctx.Error)
+    }
+  }
+
+  if (Code.Finally) {
+    $$APPLY(Code.Finally, This, [])
+  }
+  
+  return Ctx.Result
 }
 
 // to be used from JS code to stop evaluation with result
